@@ -6,7 +6,9 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+
 import java.util.Map;
+
 import net.sf.cglib.reflect.FastClass;
 import net.sf.cglib.reflect.FastMethod;
 import org.slf4j.Logger;
@@ -14,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * RPC Handler（RPC request processor）
+ *
  * @author luxiaoxun
  */
 public class RpcHandler extends SimpleChannelInboundHandler<RpcRequest> {
@@ -27,7 +30,7 @@ public class RpcHandler extends SimpleChannelInboundHandler<RpcRequest> {
     }
 
     @Override
-    public void channelRead0(final ChannelHandlerContext ctx,final RpcRequest request) throws Exception {
+    public void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) throws Exception {
         RpcServer.submit(new Runnable() {
             @Override
             public void run() {
@@ -39,7 +42,7 @@ public class RpcHandler extends SimpleChannelInboundHandler<RpcRequest> {
                     response.setResult(result);
                 } catch (Throwable t) {
                     response.setError(t.toString());
-                    logger.error("RPC Server handle request error",t);
+                    logger.error("RPC Server handle request error", t);
                 }
                 ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
                     @Override
@@ -52,13 +55,13 @@ public class RpcHandler extends SimpleChannelInboundHandler<RpcRequest> {
     }
 
     private Object handle(RpcRequest request) throws Throwable {
-        String className = request.getClassName();
+        String className   = request.getClassName();
         Object serviceBean = handlerMap.get(className);
 
-        Class<?> serviceClass = serviceBean.getClass();
-        String methodName = request.getMethodName();
+        Class<?>   serviceClass   = serviceBean.getClass();
+        String     methodName     = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();
-        Object[] parameters = request.getParameters();
+        Object[]   parameters     = request.getParameters();
 
         logger.debug(serviceClass.getName());
         logger.debug(methodName);
@@ -76,8 +79,11 @@ public class RpcHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
         // Cglib reflect
         FastClass serviceFastClass = FastClass.create(serviceClass);
-        FastMethod serviceFastMethod = serviceFastClass.getMethod(methodName, parameterTypes);
-        return serviceFastMethod.invoke(serviceBean, parameters);
+//        FastMethod serviceFastMethod = serviceFastClass.getMethod(methodName, parameterTypes);
+//        return serviceFastMethod.invoke(serviceBean, parameters);
+        // for higher-performance
+        int methodIndex = serviceFastClass.getIndex(methodName, parameterTypes);
+        return serviceFastClass.invoke(methodIndex, serviceBean, parameters);
     }
 
     @Override
