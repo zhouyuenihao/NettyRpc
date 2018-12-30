@@ -24,14 +24,16 @@ public class SerializationUtil {
 
     @SuppressWarnings("unchecked")
     private static <T> Schema<T> getSchema(Class<T> cls) {
-        Schema<T> schema = (Schema<T>) cachedSchema.get(cls);
-        if (schema == null) {
-            schema = RuntimeSchema.createFrom(cls);
-            if (schema != null) {
-                cachedSchema.put(cls, schema);
-            }
-        }
-        return schema;
+//        Schema<T> schema = (Schema<T>) cachedSchema.get(cls);
+//        if (schema == null) {
+//            schema = RuntimeSchema.createFrom(cls);
+//            if (schema != null) {
+//                cachedSchema.put(cls, schema);
+//            }
+//        }
+//        return schema;
+        // for thread-safe
+        return (Schema<T>) cachedSchema.computeIfAbsent(cls, RuntimeSchema::createFrom);
     }
 
     /**
