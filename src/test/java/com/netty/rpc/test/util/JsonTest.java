@@ -4,8 +4,8 @@ import com.netty.rpc.protocol.RpcRequest;
 import com.netty.rpc.protocol.RpcResponse;
 import com.netty.rpc.test.client.Person;
 import com.netty.rpc.test.server.HelloServiceImpl;
-import com.netty.rpc.protocol.JsonUtil;
-import com.netty.rpc.protocol.SerializationUtil;
+import com.netty.rpc.util.JsonUtil;
+import com.netty.rpc.util.SerializationUtil;
 
 import java.util.UUID;
 
