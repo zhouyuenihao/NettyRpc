@@ -8,11 +8,11 @@ An RPC framework based on Netty, ZooKeeper and Spring
 * High availability, load balance and failover
 * Service registry/discovery support by ZooKeeper
 ### Design:
-![design](https://images2015.cnblogs.com/blog/434101/201603/434101-20160316102651631-1816064105.png)
+![design](https://github.com/luxiaoxun/NettyRpc/blob/master/picture/NettyRpc-design.png)
 ### How to use (netty-rpc-test)
 1. Define an interface:
 
-		public interface HelloService { 
+	    public interface HelloService { 
 			String hello(String name); 
 			String hello(Person person);
 		}
@@ -54,4 +54,5 @@ An RPC framework based on Netty, ZooKeeper and Spring
 		// Async call
 		IAsyncObjectProxy client = rpcClient.createAsync(HelloService.class);
 		RPCFuture helloFuture = client.call("hello", "World");
-   		String result = (String) helloFuture.get(3000, TimeUnit.MILLISECONDS);
+		String result = (String) helloFuture.get(3000, TimeUnit.MILLISECONDS);
+
