@@ -1,8 +1,8 @@
-package com.app.test.app;
+package com.app.test.client;
 
 import com.netty.rpc.client.RpcClient;
 import com.netty.rpc.client.discovery.ServiceDiscovery;
-import com.app.test.client.HelloService;
+import com.app.test.service.HelloService;
 
 /**
  * Created by luxiaoxun on 2016-03-11.

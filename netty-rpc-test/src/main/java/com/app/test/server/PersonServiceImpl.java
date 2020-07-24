@@ -1,8 +1,8 @@
 package com.app.test.server;
 
 import com.netty.rpc.server.RpcService;
-import com.app.test.client.Person;
-import com.app.test.client.PersonService;
+import com.app.test.service.Person;
+import com.app.test.service.PersonService;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -53,13 +53,17 @@ public class RpcHandler extends SimpleChannelInboundHandler<RpcRequest> {
     }
 
     private Object handle(RpcRequest request) throws Throwable {
-        String className   = request.getClassName();
+        String className = request.getClassName();
         Object serviceBean = handlerMap.get(className);
+        if (serviceBean == null) {
+            logger.error("Can not find service bean with class name: " + className);
+            return null;
+        }
 
-        Class<?>   serviceClass   = serviceBean.getClass();
-        String     methodName     = request.getMethodName();
+        Class<?> serviceClass = serviceBean.getClass();
+        String methodName = request.getMethodName();
         Class<?>[] parameterTypes = request.getParameterTypes();
-        Object[]   parameters     = request.getParameters();
+        Object[] parameters = request.getParameters();
 
         logger.debug(serviceClass.getName());
         logger.debug(methodName);
@@ -71,9 +75,9 @@ public class RpcHandler extends SimpleChannelInboundHandler<RpcRequest> {
         }
 
         // JDK reflect
-        /*Method method = serviceClass.getMethod(methodName, parameterTypes);
-        method.setAccessible(true);
-        return method.invoke(serviceBean, parameters);*/
+//        Method method = serviceClass.getMethod(methodName, parameterTypes);
+//        method.setAccessible(true);
+//        return method.invoke(serviceBean, parameters);
 
         // Cglib reflect
         FastClass serviceFastClass = FastClass.create(serviceClass);

@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 /**
  * RPC annotation for RPC service
  *
- * @author huangyong
+ * @author luxiaoxun
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

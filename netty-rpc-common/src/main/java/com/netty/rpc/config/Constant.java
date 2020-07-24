@@ -3,7 +3,7 @@ package com.netty.rpc.config;
 /**
  * ZooKeeper constant
  *
- * @author huangyong
+ * @author luxiaoxun
  */
 public interface Constant {
 

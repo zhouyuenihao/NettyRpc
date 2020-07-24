@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * RPC Server
  *
- * @author huangyong, luxiaoxun
+ * @author luxiaoxun
  */
 public class RpcServer implements ApplicationContextAware, InitializingBean {
 
@@ -40,7 +40,7 @@ public class RpcServer implements ApplicationContextAware, InitializingBean {
     private ServiceRegistry serviceRegistry;
 
     private Map<String, Object> handlerMap = new HashMap<>();
-    private static ThreadPoolExecutor threadPoolExecutor;
+    private static volatile ThreadPoolExecutor threadPoolExecutor;
 
     private EventLoopGroup bossGroup = null;
     private EventLoopGroup workerGroup = null;
@@ -60,7 +60,7 @@ public class RpcServer implements ApplicationContextAware, InitializingBean {
         if (MapUtils.isNotEmpty(serviceBeanMap)) {
             for (Object serviceBean : serviceBeanMap.values()) {
                 String interfaceName = serviceBean.getClass().getAnnotation(RpcService.class).value().getName();
-                logger.info("Loading service: {}", interfaceName);
+                logger.info("Loading service, interface: {}, bean：{}", interfaceName, serviceBean);
                 handlerMap.put(interfaceName, serviceBean);
             }
         }
@@ -93,11 +93,8 @@ public class RpcServer implements ApplicationContextAware, InitializingBean {
     }
 
     public RpcServer addService(String interfaceName, Object serviceBean) {
-        if (!handlerMap.containsKey(interfaceName)) {
-            logger.info("Loading service: {}", interfaceName);
-            handlerMap.put(interfaceName, serviceBean);
-        }
-
+        logger.info("Add service, interface: {}, bean：{}", interfaceName, serviceBean);
+        handlerMap.put(interfaceName, serviceBean);
         return this;
     }
 

@@ -1,4 +1,4 @@
-package com.app.test.client;
+package com.app.test.service;
 
 public class Person {
 

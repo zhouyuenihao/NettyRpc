@@ -1,8 +1,8 @@
 package com.app.test.server;
 
 import com.netty.rpc.server.RpcService;
-import com.app.test.client.HelloService;
-import com.app.test.client.Person;
+import com.app.test.service.HelloService;
+import com.app.test.service.Person;
 
 @RpcService(HelloService.class)
 public class HelloServiceImpl implements HelloService {

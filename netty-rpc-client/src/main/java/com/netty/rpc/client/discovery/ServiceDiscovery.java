@@ -18,7 +18,6 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * 服务发现
  *
- * @author huangyong
  * @author luxiaoxun
  */
 public class ServiceDiscovery {
@@ -46,10 +45,10 @@ public class ServiceDiscovery {
         if (size > 0) {
             if (size == 1) {
                 data = dataList.get(0);
-                logger.debug("using only data: {}", data);
+                logger.debug("Using only data: {}", data);
             } else {
                 data = dataList.get(ThreadLocalRandom.current().nextInt(size));
-                logger.debug("using random data: {}", data);
+                logger.debug("Using random data: {}", data);
             }
         }
         return data;
@@ -88,22 +87,24 @@ public class ServiceDiscovery {
                 byte[] bytes = zk.getData(Constant.ZK_REGISTRY_PATH + "/" + node, false, null);
                 dataList.add(new String(bytes));
             }
-            logger.debug("node data: {}", dataList);
+            logger.debug("Node data: {}", dataList);
             this.dataList = dataList;
 
             logger.debug("Service discovery triggered updating connected server node.");
+            //Update the service info based on the latest data
             UpdateConnectedServer();
+
         } catch (KeeperException | InterruptedException e) {
             logger.error("", e);
         }
     }
 
-    private void UpdateConnectedServer(){
+    private void UpdateConnectedServer() {
         ConnectManage.getInstance().updateConnectedServer(this.dataList);
     }
 
-    public void stop(){
-        if(zookeeper!=null){
+    public void stop() {
+        if (zookeeper != null) {
             try {
                 zookeeper.close();
             } catch (InterruptedException e) {
