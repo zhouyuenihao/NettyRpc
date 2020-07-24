@@ -16,7 +16,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class PersonCallbackTest {
     public static void main(String[] args) {
-        ServiceDiscovery serviceDiscovery = new ServiceDiscovery("127.0.0.1:2181");
+        ServiceDiscovery serviceDiscovery = new ServiceDiscovery("10.217.59.164:2181");
         final RpcClient rpcClient = new RpcClient(serviceDiscovery);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 

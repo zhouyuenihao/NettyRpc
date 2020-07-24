@@ -37,7 +37,7 @@ public class BenchmarkAsync {
                                 System.out.println("result = " + result);
                             }
                         } catch (Exception e) {
-                            System.out.println(e);
+                            System.out.println(e.toString());
                         }
                     }
                 }

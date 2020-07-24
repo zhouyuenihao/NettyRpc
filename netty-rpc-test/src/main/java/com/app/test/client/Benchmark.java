@@ -14,7 +14,7 @@ public class Benchmark {
         final RpcClient rpcClient = new RpcClient(serviceDiscovery);
 
         int threadNum = 1;
-        final int requestNum = 100;
+        final int requestNum = 10;
         Thread[] threads = new Thread[threadNum];
 
         long startTime = System.currentTimeMillis();

@@ -17,13 +17,13 @@ import java.util.Map;
  *
  * @author luxiaoxun
  */
-public class RpcHandler extends SimpleChannelInboundHandler<RpcRequest> {
+public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
-    private static final Logger logger = LoggerFactory.getLogger(RpcHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(RpcServerHandler.class);
 
     private final Map<String, Object> handlerMap;
 
-    public RpcHandler(Map<String, Object> handlerMap) {
+    public RpcServerHandler(Map<String, Object> handlerMap) {
         this.handlerMap = handlerMap;
     }
 
@@ -32,7 +32,7 @@ public class RpcHandler extends SimpleChannelInboundHandler<RpcRequest> {
         RpcServer.submit(new Runnable() {
             @Override
             public void run() {
-                logger.debug("Receive request " + request.getRequestId());
+                logger.info("Receive request " + request.getRequestId());
                 RpcResponse response = new RpcResponse();
                 response.setRequestId(request.getRequestId());
                 try {

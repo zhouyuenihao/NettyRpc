@@ -16,7 +16,6 @@ import java.util.concurrent.CountDownLatch;
  * @author luxiaoxun
  */
 public class ServiceRegistry {
-
     private static final Logger logger = LoggerFactory.getLogger(ServiceRegistry.class);
 
     private CountDownLatch latch = new CountDownLatch(1);
@@ -80,8 +79,8 @@ public class ServiceRegistry {
             byte[] bytes = data.getBytes();
             //Must be a EPHEMERAL node
             String path = zk.create(Constant.ZK_DATA_PATH, bytes, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
-            logger.debug("create zookeeper node ({} => {})", path, data);
-            logger.info("registry new service: " + data);
+            logger.debug("Create zookeeper node ({} => {})", path, data);
+            logger.info("Registry new service: " + data);
         } catch (KeeperException e) {
             logger.error(e.toString());
         } catch (InterruptedException ex) {
