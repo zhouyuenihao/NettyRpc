@@ -1,5 +1,6 @@
 package com.netty.rpc.server;
 
+import cn.hutool.core.util.IdUtil;
 import com.netty.rpc.config.Constant;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
@@ -12,7 +13,6 @@ import java.util.concurrent.CountDownLatch;
 /**
  * 服务注册
  *
- * @author huangyong
  * @author luxiaoxun
  */
 public class ServiceRegistry {
@@ -28,11 +28,15 @@ public class ServiceRegistry {
     }
 
     public void register(String data) {
+        //register service info, format uuid:ip:port
         if (data != null) {
+            //Add an uuid when register the service so we can distinguish the same ip:port service
+            String uuid = IdUtil.objectId();
+            String serviceData = uuid + ":" + data;
             ZooKeeper zk = connectServer();
             if (zk != null) {
                 AddRootNode(zk); // Add root node if not exist
-                createNode(zk, data);
+                createNode(zk, serviceData);
             }
         }
     }
@@ -50,18 +54,18 @@ public class ServiceRegistry {
             });
             latch.await();
         } catch (IOException e) {
-            logger.error("", e);
-        }
-        catch (InterruptedException ex){
-            logger.error("", ex);
+            logger.error(e.toString());
+        } catch (InterruptedException ex) {
+            logger.error(ex.toString());
         }
         return zk;
     }
 
-    private void AddRootNode(ZooKeeper zk){
+    private void AddRootNode(ZooKeeper zk) {
         try {
             Stat s = zk.exists(Constant.ZK_REGISTRY_PATH, false);
             if (s == null) {
+                //Root node can be PERSISTENT node
                 zk.create(Constant.ZK_REGISTRY_PATH, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
             }
         } catch (KeeperException e) {
@@ -74,13 +78,14 @@ public class ServiceRegistry {
     private void createNode(ZooKeeper zk, String data) {
         try {
             byte[] bytes = data.getBytes();
+            //Must be a EPHEMERAL node
             String path = zk.create(Constant.ZK_DATA_PATH, bytes, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
             logger.debug("create zookeeper node ({} => {})", path, data);
+            logger.info("registry new service: " + data);
         } catch (KeeperException e) {
-            logger.error("", e);
-        }
-        catch (InterruptedException ex){
-            logger.error("", ex);
+            logger.error(e.toString());
+        } catch (InterruptedException ex) {
+            logger.error(ex.toString());
         }
     }
 }

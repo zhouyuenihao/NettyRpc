@@ -1,10 +1,10 @@
-package com.app.test.app;
+package com.app.test.client;
 
 import com.netty.rpc.client.handler.RPCFuture;
 import com.netty.rpc.client.RpcClient;
 import com.netty.rpc.client.proxy.IAsyncObjectProxy;
 import com.netty.rpc.client.discovery.ServiceDiscovery;
-import com.app.test.client.HelloService;
+import com.app.test.service.HelloService;
 
 import java.util.concurrent.TimeUnit;
 

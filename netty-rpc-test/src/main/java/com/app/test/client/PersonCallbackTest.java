@@ -1,12 +1,12 @@
-package com.app.test.app;
+package com.app.test.client;
 
 import com.netty.rpc.client.handler.AsyncRPCCallback;
 import com.netty.rpc.client.handler.RPCFuture;
 import com.netty.rpc.client.RpcClient;
 import com.netty.rpc.client.proxy.IAsyncObjectProxy;
 import com.netty.rpc.client.discovery.ServiceDiscovery;
-import com.app.test.client.Person;
-import com.app.test.client.PersonService;
+import com.app.test.service.Person;
+import com.app.test.service.PersonService;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;

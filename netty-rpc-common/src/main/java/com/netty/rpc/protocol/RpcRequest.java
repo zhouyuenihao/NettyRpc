@@ -2,7 +2,7 @@ package com.netty.rpc.protocol;
 
 /**
  * RPC Request
- * @author huangyong
+ * @author luxiaoxun
  */
 public class RpcRequest {
     private String requestId;

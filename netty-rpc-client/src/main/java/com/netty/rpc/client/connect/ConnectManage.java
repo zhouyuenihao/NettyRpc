@@ -12,10 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -30,15 +27,14 @@ public class ConnectManage {
     private volatile static ConnectManage connectManage;
 
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
-    private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16,
+    private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(32, 32,
             600L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(65536));
 
-    private CopyOnWriteArrayList<RpcClientHandler> connectedHandlers = new CopyOnWriteArrayList<>();
-    private Map<InetSocketAddress, RpcClientHandler> connectedServerNodes = new ConcurrentHashMap<>();
+    private Map<String, RpcClientHandler> connectedServerNodes = new ConcurrentHashMap<>();
 
     private ReentrantLock lock = new ReentrantLock();
     private Condition connected = lock.newCondition();
-    private long connectTimeoutMillis = 6000;
+    private long waitTimeout = 5000;
     private AtomicInteger roundRobin = new AtomicInteger(0);
     private volatile boolean isRuning = true;
 
@@ -58,63 +54,55 @@ public class ConnectManage {
 
     public void updateConnectedServer(List<String> allServerAddress) {
         if (allServerAddress != null) {
-            if (allServerAddress.size() > 0) {  // Get available server node
+            if (allServerAddress.size() > 0) {
                 //update local serverNodes cache
-                HashSet<InetSocketAddress> newAllServerNodeSet = new HashSet<InetSocketAddress>();
+                HashSet<String> newAllServerNodeSet = new HashSet<>(allServerAddress.size());
                 for (int i = 0; i < allServerAddress.size(); ++i) {
-                    String[] array = allServerAddress.get(i).split(":");
-                    if (array.length == 2) { // Should check IP and port
-                        String host = array[0];
-                        int port = Integer.parseInt(array[1]);
-                        final InetSocketAddress remotePeer = new InetSocketAddress(host, port);
-                        newAllServerNodeSet.add(remotePeer);
-                    }
+                    String address = allServerAddress.get(i);
+                    newAllServerNodeSet.add(address);
                 }
 
                 // Add new server node
-                for (final InetSocketAddress serverNodeAddress : newAllServerNodeSet) {
-                    if (!connectedServerNodes.keySet().contains(serverNodeAddress)) {
-                        connectServerNode(serverNodeAddress);
+                for (final String address : newAllServerNodeSet) {
+                    if (!connectedServerNodes.keySet().contains(address)) {
+                        connectServerNode(address);
                     }
                 }
 
                 // Close and remove invalid server nodes
-                for (int i = 0; i < connectedHandlers.size(); ++i) {
-                    RpcClientHandler connectedServerHandler = connectedHandlers.get(i);
-                    SocketAddress remotePeer = connectedServerHandler.getRemotePeer();
-                    if (!newAllServerNodeSet.contains(remotePeer)) {
-                        logger.info("Remove invalid server node " + remotePeer);
-                        RpcClientHandler handler = connectedServerNodes.get(remotePeer);
+                for (String address : connectedServerNodes.keySet()) {
+                    if (!newAllServerNodeSet.contains(address)) {
+                        logger.info("Remove invalid server node " + address);
+                        RpcClientHandler handler = connectedServerNodes.get(address);
                         if (handler != null) {
                             handler.close();
                         }
-                        connectedServerNodes.remove(remotePeer);
-                        connectedHandlers.remove(connectedServerHandler);
+                        connectedServerNodes.remove(address);
                     }
                 }
-
             } else { // No available server node ( All server nodes are down )
                 logger.error("No available server node. All server nodes are down !!!");
-                for (final RpcClientHandler connectedServerHandler : connectedHandlers) {
-                    SocketAddress remotePeer = connectedServerHandler.getRemotePeer();
-                    RpcClientHandler handler = connectedServerNodes.get(remotePeer);
+                for (String address : connectedServerNodes.keySet()) {
+                    RpcClientHandler handler = connectedServerNodes.get(address);
                     handler.close();
-                    connectedServerNodes.remove(connectedServerHandler);
+                    connectedServerNodes.remove(address);
                 }
-                connectedHandlers.clear();
             }
         }
     }
 
-    public void reconnect(final RpcClientHandler handler, final SocketAddress remotePeer) {
-        if (handler != null) {
-            connectedHandlers.remove(handler);
-            connectedServerNodes.remove(handler.getRemotePeer());
+    private void connectServerNode(String address) {
+        String[] array = address.split(":");
+        // Check the format, uuid:IP:port
+        if (array.length != 3) {
+            logger.warn("Wrong address info: " + address);
+            return;
         }
-        connectServerNode((InetSocketAddress) remotePeer);
-    }
-
-    private void connectServerNode(final InetSocketAddress remotePeer) {
+        String uuid = array[0];
+        String host = array[1];
+        int port = Integer.parseInt(array[2]);
+        logger.info("New service info: uuid: {}, host: {}, port:{}", uuid, host, port);
+        final InetSocketAddress remotePeer = new InetSocketAddress(host, port);
         threadPoolExecutor.submit(new Runnable() {
             @Override
             public void run() {
@@ -128,9 +116,9 @@ public class ConnectManage {
                     @Override
                     public void operationComplete(final ChannelFuture channelFuture) throws Exception {
                         if (channelFuture.isSuccess()) {
-                            logger.debug("Successfully connect to remote server. remote peer = " + remotePeer);
+                            logger.info("Successfully connect to remote server. remote peer = " + remotePeer);
                             RpcClientHandler handler = channelFuture.channel().pipeline().get(RpcClientHandler.class);
-                            addHandler(handler);
+                            addHandler(handler, address);
                         }
                     }
                 });
@@ -138,10 +126,8 @@ public class ConnectManage {
         });
     }
 
-    private void addHandler(RpcClientHandler handler) {
-        connectedHandlers.add(handler);
-        InetSocketAddress remoteAddress = (InetSocketAddress) handler.getChannel().remoteAddress();
-        connectedServerNodes.put(remoteAddress, handler);
+    private void addHandler(RpcClientHandler handler, String address) {
+        connectedServerNodes.put(address, handler);
         signalAvailableHandler();
     }
 
@@ -157,34 +143,34 @@ public class ConnectManage {
     private boolean waitingForHandler() throws InterruptedException {
         lock.lock();
         try {
-            return connected.await(this.connectTimeoutMillis, TimeUnit.MILLISECONDS);
+            logger.warn("Waiting for available service");
+            return connected.await(this.waitTimeout, TimeUnit.MILLISECONDS);
         } finally {
             lock.unlock();
         }
     }
 
     public RpcClientHandler chooseHandler() {
-        int size = connectedHandlers.size();
+        int size = connectedServerNodes.values().size();
         while (isRuning && size <= 0) {
             try {
-                boolean available = waitingForHandler();
-                if (available) {
-                    size = connectedHandlers.size();
-                }
+                waitingForHandler();
+                size = connectedServerNodes.values().size();
             } catch (InterruptedException e) {
-                logger.error("Waiting for available node is interrupted! ", e);
-                throw new RuntimeException("Can't connect any servers!", e);
+                logger.error("Waiting for available node is interrupted!", e);
             }
         }
         int index = (roundRobin.getAndAdd(1) + size) % size;
+        List<RpcClientHandler> connectedHandlers = new ArrayList<>(connectedServerNodes.values());
         return connectedHandlers.get(index);
     }
 
     public void stop() {
         isRuning = false;
-        for (int i = 0; i < connectedHandlers.size(); ++i) {
-            RpcClientHandler connectedServerHandler = connectedHandlers.get(i);
-            connectedServerHandler.close();
+        for (String address : connectedServerNodes.keySet()) {
+            RpcClientHandler handler = connectedServerNodes.get(address);
+            handler.close();
+            connectedServerNodes.remove(address);
         }
         signalAvailableHandler();
         threadPoolExecutor.shutdown();
