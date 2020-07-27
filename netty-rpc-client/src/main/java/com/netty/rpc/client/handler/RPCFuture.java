@@ -43,7 +43,7 @@ public class RPCFuture implements Future<Object> {
 
     @Override
     public Object get() {
-        sync.acquire(-1);
+        sync.acquire(1);
         if (this.response != null) {
             return this.response.getResult();
         } else {
@@ -53,7 +53,7 @@ public class RPCFuture implements Future<Object> {
 
     @Override
     public Object get(long timeout, TimeUnit unit) throws InterruptedException {
-        boolean success = sync.tryAcquireNanos(-1, unit.toNanos(timeout));
+        boolean success = sync.tryAcquireNanos(1, unit.toNanos(timeout));
         if (success) {
             if (this.response != null) {
                 return this.response.getResult();

@@ -3,7 +3,7 @@ package com.app.test.util;
 import com.netty.rpc.protocol.RpcRequest;
 import com.netty.rpc.protocol.RpcResponse;
 import com.app.test.service.Person;
-import com.app.test.server.HelloServiceImpl;
+import com.app.test.service.HelloServiceImpl;
 import com.netty.rpc.util.JsonUtil;
 import com.netty.rpc.util.SerializationUtil;
 

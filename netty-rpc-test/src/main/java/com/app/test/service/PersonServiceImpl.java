@@ -1,4 +1,4 @@
-package com.app.test.server;
+package com.app.test.service;
 
 import com.netty.rpc.server.RpcService;
 import com.app.test.service.Person;
