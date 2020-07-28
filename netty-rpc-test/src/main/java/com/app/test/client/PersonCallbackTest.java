@@ -3,7 +3,7 @@ package com.app.test.client;
 import com.netty.rpc.client.handler.AsyncRPCCallback;
 import com.netty.rpc.client.handler.RPCFuture;
 import com.netty.rpc.client.RpcClient;
-import com.netty.rpc.client.proxy.IAsyncObjectProxy;
+import com.netty.rpc.client.proxy.RpcService;
 import com.netty.rpc.client.discovery.ServiceDiscovery;
 import com.app.test.service.Person;
 import com.app.test.service.PersonService;
@@ -21,7 +21,7 @@ public class PersonCallbackTest {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
         try {
-            IAsyncObjectProxy client = rpcClient.createAsync(PersonService.class);
+            RpcService client = rpcClient.createAsyncService(PersonService.class);
             int num = 5;
             RPCFuture helloPersonFuture = client.call("GetTestPerson", "xiaoming", num);
             helloPersonFuture.addCallback(new AsyncRPCCallback() {

@@ -2,7 +2,7 @@ package com.app.test;
 
 import com.netty.rpc.client.handler.RPCFuture;
 import com.netty.rpc.client.RpcClient;
-import com.netty.rpc.client.proxy.IAsyncObjectProxy;
+import com.netty.rpc.client.proxy.RpcService;
 import com.app.test.service.HelloService;
 import com.app.test.service.Person;
 import com.app.test.service.PersonService;
@@ -30,14 +30,14 @@ public class ServiceTest {
 
     @Test
     public void helloTest1() {
-        HelloService helloService = rpcClient.create(HelloService.class);
+        HelloService helloService = rpcClient.createService(HelloService.class);
         String result = helloService.hello("World");
         Assert.assertEquals("Hello! World", result);
     }
 
     @Test
     public void helloTest2() {
-        HelloService helloService = rpcClient.create(HelloService.class);
+        HelloService helloService = rpcClient.createService(HelloService.class);
         Person person = new Person("Yong", "Huang");
         String result = helloService.hello(person);
         Assert.assertEquals("Hello! Yong Huang", result);
@@ -45,7 +45,7 @@ public class ServiceTest {
 
     @Test
     public void helloPersonTest() {
-        PersonService personService = rpcClient.create(PersonService.class);
+        PersonService personService = rpcClient.createService(PersonService.class);
         int num = 5;
         List<Person> persons = personService.GetTestPerson("xiaoming", num);
         List<Person> expectedPersons = new ArrayList<>();
@@ -61,14 +61,14 @@ public class ServiceTest {
 
     @Test
     public void helloFutureTest1() throws ExecutionException, InterruptedException {
-        IAsyncObjectProxy helloService = rpcClient.createAsync(HelloService.class);
+        RpcService helloService = rpcClient.createAsyncService(HelloService.class);
         RPCFuture result = helloService.call("hello", "World");
         Assert.assertEquals("Hello! World", result.get());
     }
 
     @Test
     public void helloFutureTest2() throws ExecutionException, InterruptedException {
-        IAsyncObjectProxy helloService = rpcClient.createAsync(HelloService.class);
+        RpcService helloService = rpcClient.createAsyncService(HelloService.class);
         Person person = new Person("Yong", "Huang");
         RPCFuture result = helloService.call("hello", person);
         Assert.assertEquals("Hello! Yong Huang", result.get());
@@ -76,7 +76,7 @@ public class ServiceTest {
 
     @Test
     public void helloPersonFutureTest1() throws ExecutionException, InterruptedException {
-        IAsyncObjectProxy helloPersonService = rpcClient.createAsync(PersonService.class);
+        RpcService helloPersonService = rpcClient.createAsyncService(PersonService.class);
         int num = 5;
         RPCFuture result = helloPersonService.call("GetTestPerson", "xiaoming", num);
         List<Person> persons = (List<Person>) result.get();

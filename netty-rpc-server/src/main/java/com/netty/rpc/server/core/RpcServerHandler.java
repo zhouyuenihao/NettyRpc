@@ -1,4 +1,4 @@
-package com.netty.rpc.server;
+package com.netty.rpc.server.core;
 
 import com.netty.rpc.protocol.RpcRequest;
 import com.netty.rpc.protocol.RpcResponse;
@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * RPC Handler（RPC request processor）
@@ -22,14 +23,16 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
     private static final Logger logger = LoggerFactory.getLogger(RpcServerHandler.class);
 
     private final Map<String, Object> handlerMap;
+    private final ThreadPoolExecutor serverHandlerPool;
 
-    public RpcServerHandler(Map<String, Object> handlerMap) {
+    public RpcServerHandler(Map<String, Object> handlerMap, final ThreadPoolExecutor threadPoolExecutor) {
         this.handlerMap = handlerMap;
+        this.serverHandlerPool = threadPoolExecutor;
     }
 
     @Override
-    public void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) throws Exception {
-        RpcServer.submit(new Runnable() {
+    public void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) {
+        serverHandlerPool.execute(new Runnable() {
             @Override
             public void run() {
                 logger.info("Receive request " + request.getRequestId());

@@ -24,7 +24,7 @@ public class Benchmark {
                 @Override
                 public void run() {
                     for (int i = 0; i < requestNum; i++) {
-                        final HelloService syncClient = rpcClient.create(HelloService.class);
+                        final HelloService syncClient = rpcClient.createService(HelloService.class);
                         String result = syncClient.hello(Integer.toString(i));
                         if (!result.equals("Hello! " + i)) {
                             System.out.println("error = " + result);

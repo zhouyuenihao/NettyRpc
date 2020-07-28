@@ -14,7 +14,7 @@ import java.util.UUID;
 /**
  * Created by luxiaoxun on 2016-03-16.
  */
-public class ObjectProxy<T> implements InvocationHandler, IAsyncObjectProxy {
+public class ObjectProxy<T> implements InvocationHandler, RpcService {
     private static final Logger logger = LoggerFactory.getLogger(ObjectProxy.class);
     private Class<T> clazz;
 

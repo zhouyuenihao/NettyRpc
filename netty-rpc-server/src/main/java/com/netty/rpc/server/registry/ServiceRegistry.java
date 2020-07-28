@@ -1,4 +1,4 @@
-package com.netty.rpc.server;
+package com.netty.rpc.server.registry;
 
 import cn.hutool.core.util.IdUtil;
 import com.netty.rpc.config.Constant;

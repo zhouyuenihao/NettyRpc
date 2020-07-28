@@ -1,8 +1,6 @@
 package com.app.test.service;
 
-import com.netty.rpc.server.RpcService;
-import com.app.test.service.Person;
-import com.app.test.service.PersonService;
+import com.netty.rpc.server.annotation.NettyRpcService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +8,7 @@ import java.util.List;
 /**
  * Created by luxiaoxun on 2016-03-10.
  */
-@RpcService(PersonService.class)
+@NettyRpcService(PersonService.class)
 public class PersonServiceImpl implements PersonService {
 
     @Override

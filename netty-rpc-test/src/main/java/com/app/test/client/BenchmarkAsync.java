@@ -2,7 +2,7 @@ package com.app.test.client;
 
 import com.netty.rpc.client.handler.RPCFuture;
 import com.netty.rpc.client.RpcClient;
-import com.netty.rpc.client.proxy.IAsyncObjectProxy;
+import com.netty.rpc.client.proxy.RpcService;
 import com.netty.rpc.client.discovery.ServiceDiscovery;
 import com.app.test.service.HelloService;
 
@@ -28,7 +28,7 @@ public class BenchmarkAsync {
                 public void run() {
                     for (int i = 0; i < requestNum; i++) {
                         try {
-                            IAsyncObjectProxy client = rpcClient.createAsync(HelloService.class);
+                            RpcService client = rpcClient.createAsyncService(HelloService.class);
                             RPCFuture helloFuture = client.call("hello", Integer.toString(i));
                             String result = (String) helloFuture.get(3000, TimeUnit.MILLISECONDS);
                             if (!result.equals("Hello! " + i)) {

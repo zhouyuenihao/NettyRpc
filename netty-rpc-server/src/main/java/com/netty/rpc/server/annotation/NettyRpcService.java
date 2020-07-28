@@ -1,4 +1,4 @@
-package com.netty.rpc.server;
+package com.netty.rpc.server.annotation;
 
 import org.springframework.stereotype.Component;
 
@@ -15,6 +15,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Component
-public @interface RpcService {
+public @interface NettyRpcService {
     Class<?> value();
 }

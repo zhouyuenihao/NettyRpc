@@ -27,8 +27,8 @@ public class ConnectManage {
     private volatile static ConnectManage connectManage;
 
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
-    private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(32, 32,
-            600L, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(65536));
+    private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(4, 8,
+            600L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(1000));
 
     private Map<String, RpcClientHandler> connectedServerNodes = new ConcurrentHashMap<>();
 
@@ -41,15 +41,12 @@ public class ConnectManage {
     private ConnectManage() {
     }
 
+    private static class SingletonHolder {
+        private static final ConnectManage instance = new ConnectManage();
+    }
+
     public static ConnectManage getInstance() {
-        if (connectManage == null) {
-            synchronized (ConnectManage.class) {
-                if (connectManage == null) {
-                    connectManage = new ConnectManage();
-                }
-            }
-        }
-        return connectManage;
+        return SingletonHolder.instance;
     }
 
     public void updateConnectedServer(List<String> allServerAddress) {
@@ -80,7 +77,8 @@ public class ConnectManage {
                         connectedServerNodes.remove(address);
                     }
                 }
-            } else { // No available server node ( All server nodes are down )
+            } else {
+                // No available server node ( All server nodes are down )
                 logger.error("No available server node. All server nodes are down !!!");
                 for (String address : connectedServerNodes.keySet()) {
                     RpcClientHandler handler = connectedServerNodes.get(address);

@@ -12,7 +12,7 @@
 
     <context:property-placeholder location="classpath:rpc.properties"/>
 
-    <bean id="serviceRegistry" class="com.netty.rpc.server.ServiceRegistry">
+    <bean id="serviceRegistry" class="com.netty.rpc.server.registry.ServiceRegistry">
         <constructor-arg name="registryAddress" value="${registry.address}"/>
     </bean>
 
