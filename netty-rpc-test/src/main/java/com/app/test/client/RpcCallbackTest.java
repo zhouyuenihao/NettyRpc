@@ -14,7 +14,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Created by luxiaoxun on 2016/3/17.
  */
-public class PersonCallbackTest {
+public class RpcCallbackTest {
     public static void main(String[] args) {
         ServiceDiscovery serviceDiscovery = new ServiceDiscovery("10.217.59.164:2181");
         final RpcClient rpcClient = new RpcClient(serviceDiscovery);

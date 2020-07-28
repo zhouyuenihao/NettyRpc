@@ -1,11 +1,13 @@
 package com.netty.rpc.server.core;
 
+import com.netty.rpc.protocol.Beat;
 import com.netty.rpc.protocol.RpcRequest;
 import com.netty.rpc.protocol.RpcResponse;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleStateEvent;
 import net.sf.cglib.reflect.FastClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
                 ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                        logger.debug("Send response for request " + request.getRequestId());
+                        logger.info("Send response for request " + request.getRequestId());
                     }
                 });
             }
@@ -93,7 +95,16 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        logger.error("server caught exception", cause);
+        logger.warn("Server caught exception: " + cause.getMessage());
         ctx.close();
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            logger.info("Server idle in last {} seconds", Beat.BEAT_INTERVAL);
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
     }
 }

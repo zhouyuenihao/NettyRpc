@@ -1,7 +1,9 @@
 package com.app.test.service;
 
-public class Person {
+import java.io.Serializable;
 
+public class Person implements Serializable {
+    private static final long serialVersionUID = -3475626311941868983L;
     private String firstName;
     private String lastName;
 
@@ -30,19 +32,19 @@ public class Person {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return firstName + " " + lastName;
     }
 
     @Override
     public int hashCode() {
-        return this.firstName.hashCode()^this.lastName.hashCode();
+        return this.firstName.hashCode() ^ this.lastName.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof Person) ) return false;
-        Person p = (Person)obj;
+        if (!(obj instanceof Person)) return false;
+        Person p = (Person) obj;
         return this.firstName.equals(p.firstName) && this.lastName.equals(p.lastName);
     }
 }

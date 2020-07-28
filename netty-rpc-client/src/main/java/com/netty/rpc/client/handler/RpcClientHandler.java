@@ -45,17 +45,19 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     @Override
     public void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
         String requestId = response.getRequestId();
+        logger.info("Receive response: " + requestId);
         RPCFuture rpcFuture = pendingRPC.get(requestId);
         if (rpcFuture != null) {
-            logger.debug("Get {} response", requestId);
             pendingRPC.remove(requestId);
             rpcFuture.done(response);
+        } else {
+            logger.warn("Can not get pending response for request id: " + requestId);
         }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("Client caught exception", cause);
+        logger.error("Client caught exception: " + cause.getMessage());
         ctx.close();
     }
 

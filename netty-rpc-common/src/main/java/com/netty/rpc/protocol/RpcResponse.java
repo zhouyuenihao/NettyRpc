@@ -1,10 +1,15 @@
 package com.netty.rpc.protocol;
 
+import java.io.Serializable;
+
 /**
  * RPC Response
+ *
  * @author luxiaoxun
  */
-public class RpcResponse {
+public class RpcResponse implements Serializable {
+    private static final long serialVersionUID = 8215493329459772524L;
+
     private String requestId;
     private String error;
     private Object result;

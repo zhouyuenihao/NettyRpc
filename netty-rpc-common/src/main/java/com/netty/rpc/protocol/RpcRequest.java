@@ -1,10 +1,15 @@
 package com.netty.rpc.protocol;
 
+import java.io.Serializable;
+
 /**
  * RPC Request
+ *
  * @author luxiaoxun
  */
-public class RpcRequest {
+public class RpcRequest implements Serializable {
+    private static final long serialVersionUID = -2524587347775862771L;
+
     private String requestId;
     private String className;
     private String methodName;
