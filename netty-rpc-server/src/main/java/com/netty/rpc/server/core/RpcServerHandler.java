@@ -34,6 +34,12 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) {
+        // filter beat ping
+        if (Beat.BEAT_ID.equalsIgnoreCase(request.getRequestId())) {
+            logger.info("Server read beat-ping.");
+            return;
+        }
+
         serverHandlerPool.execute(new Runnable() {
             @Override
             public void run() {
@@ -102,7 +108,8 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-            logger.info("Server idle in last {} seconds", Beat.BEAT_INTERVAL);
+            ctx.channel().close();
+            logger.warn("Channel idle in last {} seconds, close it", Beat.BEAT_TIMEOUT);
         } else {
             super.userEventTriggered(ctx, evt);
         }

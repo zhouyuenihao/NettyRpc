@@ -3,7 +3,6 @@ package com.netty.rpc.server.core;
 import com.netty.rpc.protocol.*;
 import com.netty.rpc.serializer.Serializer;
 import com.netty.rpc.serializer.hessian.HessianSerializer;
-import com.netty.rpc.serializer.protostuff.ProtostuffSerializer;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -28,7 +27,7 @@ public class RpcServerInitializer extends ChannelInitializer<SocketChannel> {
 //        Serializer serializer = ProtostuffSerializer.class.newInstance();
         Serializer serializer = HessianSerializer.class.newInstance();
         ChannelPipeline cp = channel.pipeline();
-        cp.addLast(new IdleStateHandler(0, 0, Beat.BEAT_INTERVAL, TimeUnit.SECONDS));
+        cp.addLast(new IdleStateHandler(0, 0, Beat.BEAT_TIMEOUT, TimeUnit.SECONDS));
         cp.addLast(new LengthFieldBasedFrameDecoder(65536, 0, 4, 0, 0));
         cp.addLast(new RpcDecoder(RpcRequest.class, serializer));
         cp.addLast(new RpcEncoder(RpcResponse.class, serializer));
