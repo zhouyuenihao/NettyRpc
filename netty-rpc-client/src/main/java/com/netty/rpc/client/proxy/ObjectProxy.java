@@ -1,7 +1,7 @@
 package com.netty.rpc.client.proxy;
 
 import com.netty.rpc.client.connect.ConnectManage;
-import com.netty.rpc.client.handler.RPCFuture;
+import com.netty.rpc.client.handler.RpcFuture;
 import com.netty.rpc.client.handler.RpcClientHandler;
 import com.netty.rpc.protocol.RpcRequest;
 import org.slf4j.Logger;
@@ -56,15 +56,15 @@ public class ObjectProxy<T> implements InvocationHandler, RpcService {
         }
 
         RpcClientHandler handler = ConnectManage.getInstance().chooseHandler();
-        RPCFuture rpcFuture = handler.sendRequest(request);
+        RpcFuture rpcFuture = handler.sendRequest(request);
         return rpcFuture.get();
     }
 
     @Override
-    public RPCFuture call(String funcName, Object... args) {
+    public RpcFuture call(String funcName, Object... args) {
         RpcClientHandler handler = ConnectManage.getInstance().chooseHandler();
         RpcRequest request = createRequest(this.clazz.getName(), funcName, args);
-        RPCFuture rpcFuture = handler.sendRequest(request);
+        RpcFuture rpcFuture = handler.sendRequest(request);
         return rpcFuture;
     }
 

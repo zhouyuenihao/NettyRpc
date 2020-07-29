@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by luxiaoxun on 2016-03-14.
@@ -19,7 +18,7 @@ import java.util.concurrent.CountDownLatch;
 public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     private static final Logger logger = LoggerFactory.getLogger(RpcClientHandler.class);
 
-    private ConcurrentHashMap<String, RPCFuture> pendingRPC = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, RpcFuture> pendingRPC = new ConcurrentHashMap<>();
     private volatile Channel channel;
     private SocketAddress remotePeer;
 
@@ -39,7 +38,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     public void channelRead0(ChannelHandlerContext ctx, RpcResponse response) throws Exception {
         String requestId = response.getRequestId();
         logger.debug("Receive response: " + requestId);
-        RPCFuture rpcFuture = pendingRPC.get(requestId);
+        RpcFuture rpcFuture = pendingRPC.get(requestId);
         if (rpcFuture != null) {
             pendingRPC.remove(requestId);
             rpcFuture.done(response);
@@ -58,8 +57,8 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
 
-    public RPCFuture sendRequest(RpcRequest request) {
-        RPCFuture rpcFuture = new RPCFuture(request);
+    public RpcFuture sendRequest(RpcRequest request) {
+        RpcFuture rpcFuture = new RpcFuture(request);
         pendingRPC.put(request.getRequestId(), rpcFuture);
         try {
             ChannelFuture channelFuture = channel.writeAndFlush(request).sync();

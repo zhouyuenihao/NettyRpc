@@ -1,6 +1,6 @@
 package com.app.test;
 
-import com.netty.rpc.client.handler.RPCFuture;
+import com.netty.rpc.client.handler.RpcFuture;
 import com.netty.rpc.client.RpcClient;
 import com.netty.rpc.client.proxy.RpcService;
 import com.app.test.service.HelloService;
@@ -62,7 +62,7 @@ public class ServiceTest {
     @Test
     public void helloFutureTest1() throws ExecutionException, InterruptedException {
         RpcService helloService = rpcClient.createAsyncService(HelloService.class);
-        RPCFuture result = helloService.call("hello", "World");
+        RpcFuture result = helloService.call("hello", "World");
         Assert.assertEquals("Hello! World", result.get());
     }
 
@@ -70,7 +70,7 @@ public class ServiceTest {
     public void helloFutureTest2() throws ExecutionException, InterruptedException {
         RpcService helloService = rpcClient.createAsyncService(HelloService.class);
         Person person = new Person("Yong", "Huang");
-        RPCFuture result = helloService.call("hello", person);
+        RpcFuture result = helloService.call("hello", person);
         Assert.assertEquals("Hello! Yong Huang", result.get());
     }
 
@@ -78,7 +78,7 @@ public class ServiceTest {
     public void helloPersonFutureTest1() throws ExecutionException, InterruptedException {
         RpcService helloPersonService = rpcClient.createAsyncService(PersonService.class);
         int num = 5;
-        RPCFuture result = helloPersonService.call("GetTestPerson", "xiaoming", num);
+        RpcFuture result = helloPersonService.call("GetTestPerson", "xiaoming", num);
         List<Person> persons = (List<Person>) result.get();
         List<Person> expectedPersons = new ArrayList<>();
         for (int i = 0; i < num; i++) {

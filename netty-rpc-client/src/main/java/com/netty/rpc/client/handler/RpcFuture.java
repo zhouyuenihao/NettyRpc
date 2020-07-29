@@ -8,10 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -19,8 +17,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * RPCFuture for async RPC call
  * Created by luxiaoxun on 2016-03-15.
  */
-public class RPCFuture implements Future<Object> {
-    private static final Logger logger = LoggerFactory.getLogger(RPCFuture.class);
+public class RpcFuture implements Future<Object> {
+    private static final Logger logger = LoggerFactory.getLogger(RpcFuture.class);
 
     private Sync sync;
     private RpcRequest request;
@@ -30,7 +28,7 @@ public class RPCFuture implements Future<Object> {
     private List<AsyncRPCCallback> pendingCallbacks = new ArrayList<>();
     private ReentrantLock lock = new ReentrantLock();
 
-    public RPCFuture(RpcRequest request) {
+    public RpcFuture(RpcRequest request) {
         this.sync = new Sync();
         this.request = request;
         this.startTime = System.currentTimeMillis();
@@ -99,7 +97,7 @@ public class RPCFuture implements Future<Object> {
         }
     }
 
-    public RPCFuture addCallback(AsyncRPCCallback callback) {
+    public RpcFuture addCallback(AsyncRPCCallback callback) {
         lock.lock();
         try {
             if (isDone()) {

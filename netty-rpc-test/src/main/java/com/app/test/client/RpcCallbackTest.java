@@ -1,7 +1,7 @@
 package com.app.test.client;
 
 import com.netty.rpc.client.handler.AsyncRPCCallback;
-import com.netty.rpc.client.handler.RPCFuture;
+import com.netty.rpc.client.handler.RpcFuture;
 import com.netty.rpc.client.RpcClient;
 import com.netty.rpc.client.proxy.RpcService;
 import com.netty.rpc.client.discovery.ServiceDiscovery;
@@ -23,7 +23,7 @@ public class RpcCallbackTest {
         try {
             RpcService client = rpcClient.createAsyncService(PersonService.class);
             int num = 5;
-            RPCFuture helloPersonFuture = client.call("GetTestPerson", "xiaoming", num);
+            RpcFuture helloPersonFuture = client.call("GetTestPerson", "xiaoming", num);
             helloPersonFuture.addCallback(new AsyncRPCCallback() {
                 @Override
                 public void success(Object result) {
