@@ -16,19 +16,19 @@ import java.util.List;
 public class CuratorClient {
     private CuratorFramework client;
 
-    public CuratorClient(String connectString, String namespace, int sessionTimeout) {
+    public CuratorClient(String connectString, String namespace, int sessionTimeout, int connectionTimeout) {
         client = CuratorFrameworkFactory.builder().namespace(namespace).connectString(connectString)
-                .sessionTimeoutMs(sessionTimeout)
+                .sessionTimeoutMs(sessionTimeout).connectionTimeoutMs(connectionTimeout)
                 .retryPolicy(new ExponentialBackoffRetry(2000, 10)).build();
         client.start();
     }
 
-    public CuratorClient(String connectString, int sessionTimeout) {
-        this(connectString, Constant.ZK_NAMESPACE, sessionTimeout);
+    public CuratorClient(String connectString, int timeout) {
+        this(connectString, Constant.ZK_NAMESPACE, timeout, timeout);
     }
 
     public CuratorClient(String connectString) {
-        this(connectString, Constant.ZK_NAMESPACE, Constant.ZK_SESSION_TIMEOUT);
+        this(connectString, Constant.ZK_NAMESPACE, Constant.ZK_SESSION_TIMEOUT, Constant.ZK_CONNECTION_TIMEOUT);
     }
 
     public CuratorFramework getClient() {
