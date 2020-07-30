@@ -2,13 +2,12 @@ package com.netty.rpc.server.registry;
 
 import cn.hutool.core.util.IdUtil;
 import com.netty.rpc.config.Constant;
-import org.apache.zookeeper.*;
-import org.apache.zookeeper.data.Stat;
+import com.netty.rpc.zookeeper.CuratorClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 服务注册
@@ -18,73 +17,40 @@ import java.util.concurrent.CountDownLatch;
 public class ServiceRegistry {
     private static final Logger logger = LoggerFactory.getLogger(ServiceRegistry.class);
 
-    private CountDownLatch latch = new CountDownLatch(1);
-
-    private String registryAddress;
+    private CuratorClient curatorClient;
+    private List<String> pathList = new ArrayList<>();
 
     public ServiceRegistry(String registryAddress) {
-        this.registryAddress = registryAddress;
+        this.curatorClient = new CuratorClient(registryAddress, 5000);
     }
 
-    public void register(String data) {
+    public void registerService(String data) {
         //register service info, format uuid:ip:port
         if (data != null) {
             //Add an uuid when register the service so we can distinguish the same ip:port service
             String uuid = IdUtil.objectId();
             String serviceData = uuid + ":" + data;
-            ZooKeeper zk = connectServer();
-            if (zk != null) {
-                AddRootNode(zk); // Add root node if not exist
-                createNode(zk, serviceData);
+            byte[] bytes = serviceData.getBytes();
+            try {
+                String path = Constant.ZK_DATA_PATH + "-" + uuid;
+                this.curatorClient.createPathData(path, bytes);
+                pathList.add(path);
+                logger.info("Registry new service: " + data);
+            } catch (Exception e) {
+                logger.error("Register service {} fail, exception: {}", data, e.getMessage());
             }
         }
     }
 
-    private ZooKeeper connectServer() {
-        ZooKeeper zk = null;
-        try {
-            zk = new ZooKeeper(registryAddress, Constant.ZK_SESSION_TIMEOUT, new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                    if (event.getState() == Event.KeeperState.SyncConnected) {
-                        latch.countDown();
-                    }
-                }
-            });
-            latch.await();
-        } catch (IOException e) {
-            logger.error(e.toString());
-        } catch (InterruptedException ex) {
-            logger.error(ex.toString());
-        }
-        return zk;
-    }
-
-    private void AddRootNode(ZooKeeper zk) {
-        try {
-            Stat s = zk.exists(Constant.ZK_REGISTRY_PATH, false);
-            if (s == null) {
-                //Root node can be PERSISTENT node
-                zk.create(Constant.ZK_REGISTRY_PATH, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+    public void unregisterService() {
+        logger.info("Unregister all service");
+        for (String path : pathList) {
+            try {
+                this.curatorClient.deletePath(path);
+            } catch (Exception ex) {
+                logger.error("Delete service path error: " + ex.getMessage());
             }
-        } catch (KeeperException e) {
-            logger.error(e.toString());
-        } catch (InterruptedException e) {
-            logger.error(e.toString());
         }
-    }
-
-    private void createNode(ZooKeeper zk, String data) {
-        try {
-            byte[] bytes = data.getBytes();
-            //Must be a EPHEMERAL node
-            String path = zk.create(Constant.ZK_DATA_PATH, bytes, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
-            logger.debug("Create zookeeper node ({} => {})", path, data);
-            logger.info("Registry new service: " + data);
-        } catch (KeeperException e) {
-            logger.error(e.toString());
-        } catch (InterruptedException ex) {
-            logger.error(ex.toString());
-        }
+        this.curatorClient.close();
     }
 }

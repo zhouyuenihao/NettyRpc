@@ -2,18 +2,15 @@ package com.netty.rpc.client.discovery;
 
 import com.netty.rpc.client.connect.ConnectManage;
 import com.netty.rpc.config.Constant;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
+import com.netty.rpc.zookeeper.CuratorClient;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 服务发现
@@ -21,95 +18,60 @@ import java.util.concurrent.ThreadLocalRandom;
  * @author luxiaoxun
  */
 public class ServiceDiscovery {
-
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscovery.class);
-
-    private CountDownLatch latch = new CountDownLatch(1);
-
-    private volatile List<String> dataList = new ArrayList<>();
-
-    private String registryAddress;
-    private ZooKeeper zookeeper;
+    private CuratorClient curatorClient;
 
     public ServiceDiscovery(String registryAddress) {
-        this.registryAddress = registryAddress;
-        zookeeper = connectServer();
-        if (zookeeper != null) {
-            watchNode(zookeeper);
-        }
+        this.curatorClient = new CuratorClient(registryAddress);
+        discoveryService();
     }
 
-    public String discover() {
-        String data = null;
-        int size = dataList.size();
-        if (size > 0) {
-            if (size == 1) {
-                data = dataList.get(0);
-                logger.debug("Using only data: {}", data);
-            } else {
-                data = dataList.get(ThreadLocalRandom.current().nextInt(size));
-                logger.debug("Using random data: {}", data);
-            }
-        }
-        return data;
-    }
-
-    private ZooKeeper connectServer() {
-        ZooKeeper zk = null;
+    private void discoveryService() {
         try {
-            zk = new ZooKeeper(registryAddress, Constant.ZK_SESSION_TIMEOUT, new Watcher() {
+            // Get init service info
+            getServiceAndUpdateServer();
+            // Add watch listener
+            curatorClient.watchPathChildrenNode(Constant.ZK_REGISTRY_PATH, new PathChildrenCacheListener() {
                 @Override
-                public void process(WatchedEvent event) {
-                    if (event.getState() == Event.KeeperState.SyncConnected) {
-                        latch.countDown();
+                public void childEvent(CuratorFramework curatorFramework, PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
+                    PathChildrenCacheEvent.Type type = pathChildrenCacheEvent.getType();
+                    switch (type) {
+                        case CHILD_ADDED:
+                        case CHILD_UPDATED:
+                        case CHILD_REMOVED:
+                            getServiceAndUpdateServer();
+                            break;
                     }
                 }
             });
-            latch.await();
-        } catch (IOException | InterruptedException e) {
-            logger.error("", e);
+        } catch (Exception ex) {
+            logger.error("Watch node exception: " + ex.getMessage());
         }
-        return zk;
     }
 
-    private void watchNode(final ZooKeeper zk) {
+    private void getServiceAndUpdateServer() {
         try {
-            List<String> nodeList = zk.getChildren(Constant.ZK_REGISTRY_PATH, new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                    if (event.getType() == Event.EventType.NodeChildrenChanged) {
-                        watchNode(zk);
-                    }
-                }
-            });
+            List<String> nodeList = curatorClient.getChildren(Constant.ZK_REGISTRY_PATH);
             List<String> dataList = new ArrayList<>();
             for (String node : nodeList) {
-                byte[] bytes = zk.getData(Constant.ZK_REGISTRY_PATH + "/" + node, false, null);
+                logger.info("Service node: " + node);
+                byte[] bytes = curatorClient.getData(Constant.ZK_REGISTRY_PATH + "/" + node);
                 dataList.add(new String(bytes));
             }
             logger.debug("Node data: {}", dataList);
-            this.dataList = dataList;
-
             logger.debug("Service discovery triggered updating connected server node.");
             //Update the service info based on the latest data
-            UpdateConnectedServer();
-
-        } catch (KeeperException | InterruptedException e) {
-            logger.error("", e);
+            UpdateConnectedServer(dataList);
+        } catch (Exception e) {
+            logger.error("Get node exception: " + e.getMessage());
         }
     }
 
-    private void UpdateConnectedServer() {
-        ConnectManage.getInstance().updateConnectedServer(this.dataList);
+    private void UpdateConnectedServer(List<String> dataList) {
+        ConnectManage.getInstance().updateConnectedServer(dataList);
     }
 
     public void stop() {
-        if (zookeeper != null) {
-            try {
-                zookeeper.close();
-            } catch (InterruptedException e) {
-                logger.error("", e);
-            }
-        }
+        this.curatorClient.close();
     }
 }

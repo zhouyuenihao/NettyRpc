@@ -59,7 +59,7 @@ public class NettyServer extends Server {
                     ChannelFuture future = bootstrap.bind(host, port).sync();
 
                     if (serviceRegistry != null) {
-                        serviceRegistry.register(serverAddress);
+                        serviceRegistry.registerService(serverAddress);
                     }
                     logger.info("Server started on port {}", port);
                     future.channel().closeFuture().sync();
@@ -71,6 +71,7 @@ public class NettyServer extends Server {
                     }
                 } finally {
                     try {
+                        serviceRegistry.unregisterService();
                         workerGroup.shutdownGracefully();
                         bossGroup.shutdownGracefully();
                     } catch (Exception ex) {

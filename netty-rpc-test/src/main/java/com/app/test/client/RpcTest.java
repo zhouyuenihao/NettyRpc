@@ -32,7 +32,7 @@ public class RpcTest {
                             System.out.println("result = " + result);
                         }
                         try {
-                            Thread.sleep(5 * 1000);
+                            Thread.sleep(20 * 1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
