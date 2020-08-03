@@ -20,8 +20,8 @@ public class RpcClient {
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16,
             600L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(1000));
 
-    public RpcClient(ServiceDiscovery serviceDiscovery) {
-        this.serviceDiscovery = serviceDiscovery;
+    public RpcClient(String address) {
+        this.serviceDiscovery = new ServiceDiscovery(address);
     }
 
     @SuppressWarnings("unchecked")

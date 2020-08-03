@@ -41,14 +41,13 @@ An RPC framework based on Netty, ZooKeeper and Spring
 
 4. Start server:
 
-   Start server with spring: RpcBootstrap
+   Start server with spring config: RpcServerBootstrap
 
-   Start server without spring: RpcBootstrapWithoutSpring
+   Start server without spring config: RpcServerBootstrap2
 
 5. Use the client:
- 
-		ServiceDiscovery serviceDiscovery = new ServiceDiscovery("127.0.0.1:2181");
-		final RpcClient rpcClient = new RpcClient(serviceDiscovery);
+
+		final RpcClient rpcClient = new RpcClient("127.0.0.1:2181");
 		
 		// Sync call
 		HelloService helloService = rpcClient.createService(HelloService.class);

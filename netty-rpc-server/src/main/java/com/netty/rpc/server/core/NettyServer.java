@@ -23,13 +23,9 @@ public class NettyServer extends Server {
     private ServiceRegistry serviceRegistry;
     private Map<String, Object> handlerMap = new HashMap<>();
 
-    public NettyServer(String serverAddress) {
+    public NettyServer(String serverAddress, String registryAddress) {
         this.serverAddress = serverAddress;
-    }
-
-    public NettyServer(String serverAddress, ServiceRegistry serviceRegistry) {
-        this.serverAddress = serverAddress;
-        this.serviceRegistry = serviceRegistry;
+        this.serviceRegistry = new ServiceRegistry(registryAddress);
     }
 
     public void addService(String interfaceName, Object serviceBean) {

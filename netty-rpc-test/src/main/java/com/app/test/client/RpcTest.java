@@ -1,7 +1,6 @@
 package com.app.test.client;
 
 import com.netty.rpc.client.RpcClient;
-import com.netty.rpc.client.discovery.ServiceDiscovery;
 import com.app.test.service.HelloService;
 
 /**
@@ -10,8 +9,7 @@ import com.app.test.service.HelloService;
 public class RpcTest {
 
     public static void main(String[] args) throws InterruptedException {
-        ServiceDiscovery serviceDiscovery = new ServiceDiscovery("10.217.59.164:2181");
-        final RpcClient rpcClient = new RpcClient(serviceDiscovery);
+        final RpcClient rpcClient = new RpcClient("10.217.59.164:2181");
 
         int threadNum = 1;
         final int requestNum = 10;

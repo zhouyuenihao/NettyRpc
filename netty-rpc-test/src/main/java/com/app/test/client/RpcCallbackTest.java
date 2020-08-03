@@ -4,7 +4,6 @@ import com.netty.rpc.client.handler.AsyncRPCCallback;
 import com.netty.rpc.client.handler.RpcFuture;
 import com.netty.rpc.client.RpcClient;
 import com.netty.rpc.client.proxy.RpcService;
-import com.netty.rpc.client.discovery.ServiceDiscovery;
 import com.app.test.service.Person;
 import com.app.test.service.PersonService;
 
@@ -16,8 +15,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class RpcCallbackTest {
     public static void main(String[] args) {
-        ServiceDiscovery serviceDiscovery = new ServiceDiscovery("10.217.59.164:2181");
-        final RpcClient rpcClient = new RpcClient(serviceDiscovery);
+        final RpcClient rpcClient = new RpcClient("10.217.59.164:2181");
         final CountDownLatch countDownLatch = new CountDownLatch(1);
 
         try {

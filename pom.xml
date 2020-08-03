@@ -78,13 +78,14 @@
             <artifactId>hessian</artifactId>
             <version>4.0.63</version>
         </dependency>
-        
+
+        <!-- curator -->
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-framework</artifactId>
             <version>${curator.version}</version>
         </dependency>
-        <!--curator recipes-->
+        <!-- curator recipes -->
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-recipes</artifactId>
