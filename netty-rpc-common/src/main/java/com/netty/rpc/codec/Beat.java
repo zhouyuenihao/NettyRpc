@@ -1,4 +1,4 @@
-package com.netty.rpc.protocol;
+package com.netty.rpc.codec;
 
 public final class Beat {
 

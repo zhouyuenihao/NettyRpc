@@ -21,7 +21,7 @@ public class NettyServer extends Server {
     private Thread thread;
     private String serverAddress;
     private ServiceRegistry serviceRegistry;
-    private Map<String, Object> handlerMap = new HashMap<>();
+    private Map<String, Object> serviceMap = new HashMap<>();
 
     public NettyServer(String serverAddress, String registryAddress) {
         this.serverAddress = serverAddress;
@@ -30,7 +30,7 @@ public class NettyServer extends Server {
 
     public void addService(String interfaceName, Object serviceBean) {
         logger.info("Adding service, interface: {}, bean：{}", interfaceName, serviceBean);
-        handlerMap.put(interfaceName, serviceBean);
+        serviceMap.put(interfaceName, serviceBean);
     }
 
     public void start() {
@@ -45,7 +45,7 @@ public class NettyServer extends Server {
                 try {
                     ServerBootstrap bootstrap = new ServerBootstrap();
                     bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                            .childHandler(new RpcServerInitializer(handlerMap, threadPoolExecutor))
+                            .childHandler(new RpcServerInitializer(serviceMap, threadPoolExecutor))
                             .option(ChannelOption.SO_BACKLOG, 128)
                             .childOption(ChannelOption.SO_KEEPALIVE, true);
 
@@ -55,7 +55,7 @@ public class NettyServer extends Server {
                     ChannelFuture future = bootstrap.bind(host, port).sync();
 
                     if (serviceRegistry != null) {
-                        serviceRegistry.registerService(serverAddress);
+                        serviceRegistry.registerService(host, port, serviceMap);
                     }
                     logger.info("Server started on port {}", port);
                     future.channel().closeFuture().sync();

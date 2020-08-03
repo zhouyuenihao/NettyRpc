@@ -2,6 +2,7 @@ package com.netty.rpc.client.discovery;
 
 import com.netty.rpc.client.connect.ConnectManage;
 import com.netty.rpc.config.Constant;
+import com.netty.rpc.protocol.RpcProtocol;
 import com.netty.rpc.zookeeper.CuratorClient;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
@@ -52,11 +53,13 @@ public class ServiceDiscovery {
     private void getServiceAndUpdateServer() {
         try {
             List<String> nodeList = curatorClient.getChildren(Constant.ZK_REGISTRY_PATH);
-            List<String> dataList = new ArrayList<>();
+            List<RpcProtocol> dataList = new ArrayList<>();
             for (String node : nodeList) {
                 logger.info("Service node: " + node);
                 byte[] bytes = curatorClient.getData(Constant.ZK_REGISTRY_PATH + "/" + node);
-                dataList.add(new String(bytes));
+                String json = new String(bytes);
+                RpcProtocol rpcProtocol = RpcProtocol.fromJson(json);
+                dataList.add(rpcProtocol);
             }
             logger.debug("Node data: {}", dataList);
             logger.debug("Service discovery triggered updating connected server node.");
@@ -67,7 +70,7 @@ public class ServiceDiscovery {
         }
     }
 
-    private void UpdateConnectedServer(List<String> dataList) {
+    private void UpdateConnectedServer(List<RpcProtocol> dataList) {
         ConnectManage.getInstance().updateConnectedServer(dataList);
     }
 

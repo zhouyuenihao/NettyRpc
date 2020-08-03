@@ -1,9 +1,8 @@
 package com.netty.rpc.client.handler;
 
-import com.netty.rpc.protocol.*;
+import com.netty.rpc.codec.*;
 import com.netty.rpc.serializer.Serializer;
 import com.netty.rpc.serializer.hessian.HessianSerializer;
-import com.netty.rpc.serializer.protostuff.ProtostuffSerializer;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;

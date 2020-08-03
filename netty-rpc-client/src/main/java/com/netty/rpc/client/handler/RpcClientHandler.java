@@ -1,8 +1,8 @@
 package com.netty.rpc.client.handler;
 
-import com.netty.rpc.protocol.Beat;
-import com.netty.rpc.protocol.RpcRequest;
-import com.netty.rpc.protocol.RpcResponse;
+import com.netty.rpc.codec.Beat;
+import com.netty.rpc.codec.RpcRequest;
+import com.netty.rpc.codec.RpcResponse;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.timeout.IdleStateEvent;

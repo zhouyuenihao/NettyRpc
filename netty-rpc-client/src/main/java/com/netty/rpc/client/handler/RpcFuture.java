@@ -1,8 +1,8 @@
 package com.netty.rpc.client.handler;
 
 import com.netty.rpc.client.RpcClient;
-import com.netty.rpc.protocol.RpcRequest;
-import com.netty.rpc.protocol.RpcResponse;
+import com.netty.rpc.codec.RpcRequest;
+import com.netty.rpc.codec.RpcResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

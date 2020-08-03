@@ -2,6 +2,7 @@ package com.netty.rpc.client.connect;
 
 import com.netty.rpc.client.handler.RpcClientHandler;
 import com.netty.rpc.client.handler.RpcClientInitializer;
+import com.netty.rpc.protocol.RpcProtocol;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -30,7 +31,7 @@ public class ConnectManage {
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(4, 8,
             600L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(1000));
 
-    private Map<String, RpcClientHandler> connectedServerNodes = new ConcurrentHashMap<>();
+    private Map<RpcProtocol, RpcClientHandler> connectedServerNodes = new ConcurrentHashMap<>();
 
     private ReentrantLock lock = new ReentrantLock();
     private Condition connected = lock.newCondition();
@@ -49,58 +50,50 @@ public class ConnectManage {
         return SingletonHolder.instance;
     }
 
-    public void updateConnectedServer(List<String> allServerAddress) {
-        if (allServerAddress != null) {
-            if (allServerAddress.size() > 0) {
+    public void updateConnectedServer(List<RpcProtocol> serviceList) {
+        if (serviceList != null) {
+            if (serviceList.size() > 0) {
                 //update local serverNodes cache
-                HashSet<String> newAllServerNodeSet = new HashSet<>(allServerAddress.size());
-                for (int i = 0; i < allServerAddress.size(); ++i) {
-                    String address = allServerAddress.get(i);
-                    newAllServerNodeSet.add(address);
+                HashSet<RpcProtocol> serviceSet = new HashSet<>(serviceList.size());
+                for (int i = 0; i < serviceList.size(); ++i) {
+                    RpcProtocol rpcProtocol = serviceList.get(i);
+                    serviceSet.add(rpcProtocol);
                 }
 
                 // Add new server node
-                for (final String address : newAllServerNodeSet) {
-                    if (!connectedServerNodes.keySet().contains(address)) {
-                        connectServerNode(address);
+                for (final RpcProtocol rpcProtocol : serviceSet) {
+                    if (!connectedServerNodes.keySet().contains(rpcProtocol)) {
+                        connectServerNode(rpcProtocol);
                     }
                 }
 
                 // Close and remove invalid server nodes
-                for (String address : connectedServerNodes.keySet()) {
-                    if (!newAllServerNodeSet.contains(address)) {
-                        logger.info("Remove invalid server node " + address);
-                        RpcClientHandler handler = connectedServerNodes.get(address);
+                for (RpcProtocol rpcProtocol : connectedServerNodes.keySet()) {
+                    if (!serviceSet.contains(rpcProtocol)) {
+                        logger.info("Remove invalid service: " + rpcProtocol.toJson());
+                        RpcClientHandler handler = connectedServerNodes.get(rpcProtocol);
                         if (handler != null) {
                             handler.close();
                         }
-                        connectedServerNodes.remove(address);
+                        connectedServerNodes.remove(rpcProtocol);
                     }
                 }
             } else {
                 // No available server node ( All server nodes are down )
                 logger.error("No available server node. All server nodes are down !!!");
-                for (String address : connectedServerNodes.keySet()) {
-                    RpcClientHandler handler = connectedServerNodes.get(address);
+                for (RpcProtocol rpcProtocol : connectedServerNodes.keySet()) {
+                    RpcClientHandler handler = connectedServerNodes.get(rpcProtocol);
                     handler.close();
-                    connectedServerNodes.remove(address);
+                    connectedServerNodes.remove(rpcProtocol);
                 }
             }
         }
     }
 
-    private void connectServerNode(String address) {
-        String[] array = address.split(":");
-        // Check the format, uuid:IP:port
-        if (array.length != 3) {
-            logger.warn("Wrong address info: " + address);
-            return;
-        }
-        String uuid = array[0];
-        String host = array[1];
-        int port = Integer.parseInt(array[2]);
-        logger.info("New service info: uuid: {}, host: {}, port:{}", uuid, host, port);
-        final InetSocketAddress remotePeer = new InetSocketAddress(host, port);
+    private void connectServerNode(RpcProtocol rpcProtocol) {
+        logger.info("New service: {}, uuid: {}, host: {}, port:{}", rpcProtocol.getServiceName(),
+                rpcProtocol.getUuid(), rpcProtocol.getHost(), rpcProtocol.getPort());
+        final InetSocketAddress remotePeer = new InetSocketAddress(rpcProtocol.getHost(), rpcProtocol.getPort());
         threadPoolExecutor.submit(new Runnable() {
             @Override
             public void run() {
@@ -116,7 +109,7 @@ public class ConnectManage {
                         if (channelFuture.isSuccess()) {
                             logger.info("Successfully connect to remote server. remote peer = " + remotePeer);
                             RpcClientHandler handler = channelFuture.channel().pipeline().get(RpcClientHandler.class);
-                            addHandler(handler, address);
+                            addHandler(handler, rpcProtocol);
                         }
                     }
                 });
@@ -124,8 +117,8 @@ public class ConnectManage {
         });
     }
 
-    private void addHandler(RpcClientHandler handler, String address) {
-        connectedServerNodes.put(address, handler);
+    private void addHandler(RpcClientHandler handler, RpcProtocol rpcProtocol) {
+        connectedServerNodes.put(rpcProtocol, handler);
         signalAvailableHandler();
     }
 
@@ -165,10 +158,10 @@ public class ConnectManage {
 
     public void stop() {
         isRuning = false;
-        for (String address : connectedServerNodes.keySet()) {
-            RpcClientHandler handler = connectedServerNodes.get(address);
+        for (RpcProtocol rpcProtocol : connectedServerNodes.keySet()) {
+            RpcClientHandler handler = connectedServerNodes.get(rpcProtocol);
             handler.close();
-            connectedServerNodes.remove(address);
+            connectedServerNodes.remove(rpcProtocol);
         }
         signalAvailableHandler();
         threadPoolExecutor.shutdown();
