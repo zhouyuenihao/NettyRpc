@@ -1,6 +1,6 @@
 package com.netty.rpc.client.discovery;
 
-import com.netty.rpc.client.connect.ConnectManage;
+import com.netty.rpc.client.connect.ConnectionManager;
 import com.netty.rpc.config.Constant;
 import com.netty.rpc.protocol.RpcProtocol;
 import com.netty.rpc.zookeeper.CuratorClient;
@@ -30,6 +30,7 @@ public class ServiceDiscovery {
     private void discoveryService() {
         try {
             // Get init service info
+            logger.info("Get init service info");
             getServiceAndUpdateServer();
             // Add watch listener
             curatorClient.watchPathChildrenNode(Constant.ZK_REGISTRY_PATH, new PathChildrenCacheListener() {
@@ -40,6 +41,7 @@ public class ServiceDiscovery {
                         case CHILD_ADDED:
                         case CHILD_UPDATED:
                         case CHILD_REMOVED:
+                            logger.info("Service info updated, try to get latest service list");
                             getServiceAndUpdateServer();
                             break;
                     }
@@ -55,7 +57,7 @@ public class ServiceDiscovery {
             List<String> nodeList = curatorClient.getChildren(Constant.ZK_REGISTRY_PATH);
             List<RpcProtocol> dataList = new ArrayList<>();
             for (String node : nodeList) {
-                logger.info("Service node: " + node);
+                logger.debug("Service node: " + node);
                 byte[] bytes = curatorClient.getData(Constant.ZK_REGISTRY_PATH + "/" + node);
                 String json = new String(bytes);
                 RpcProtocol rpcProtocol = RpcProtocol.fromJson(json);
@@ -71,7 +73,7 @@ public class ServiceDiscovery {
     }
 
     private void UpdateConnectedServer(List<RpcProtocol> dataList) {
-        ConnectManage.getInstance().updateConnectedServer(dataList);
+        ConnectionManager.getInstance().updateConnectedServer(dataList);
     }
 
     public void stop() {

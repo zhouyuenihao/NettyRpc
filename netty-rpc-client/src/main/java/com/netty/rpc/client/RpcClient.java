@@ -2,7 +2,7 @@ package com.netty.rpc.client;
 
 import com.netty.rpc.client.proxy.RpcService;
 import com.netty.rpc.client.proxy.ObjectProxy;
-import com.netty.rpc.client.connect.ConnectManage;
+import com.netty.rpc.client.connect.ConnectionManager;
 import com.netty.rpc.client.discovery.ServiceDiscovery;
 
 import java.lang.reflect.Proxy;
@@ -44,7 +44,7 @@ public class RpcClient {
     public void stop() {
         threadPoolExecutor.shutdown();
         serviceDiscovery.stop();
-        ConnectManage.getInstance().stop();
+        ConnectionManager.getInstance().stop();
     }
 }
 

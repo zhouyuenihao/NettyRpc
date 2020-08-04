@@ -1,6 +1,6 @@
 package com.netty.rpc.client.proxy;
 
-import com.netty.rpc.client.connect.ConnectManage;
+import com.netty.rpc.client.connect.ConnectionManager;
 import com.netty.rpc.client.handler.RpcFuture;
 import com.netty.rpc.client.handler.RpcClientHandler;
 import com.netty.rpc.codec.RpcRequest;
@@ -46,23 +46,25 @@ public class ObjectProxy<T> implements InvocationHandler, RpcService {
         request.setParameterTypes(method.getParameterTypes());
         request.setParameters(args);
         // Debug
-        logger.debug(method.getDeclaringClass().getName());
-        logger.debug(method.getName());
-        for (int i = 0; i < method.getParameterTypes().length; ++i) {
-            logger.debug(method.getParameterTypes()[i].getName());
-        }
-        for (int i = 0; i < args.length; ++i) {
-            logger.debug(args[i].toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug(method.getDeclaringClass().getName());
+            logger.debug(method.getName());
+            for (int i = 0; i < method.getParameterTypes().length; ++i) {
+                logger.debug(method.getParameterTypes()[i].getName());
+            }
+            for (int i = 0; i < args.length; ++i) {
+                logger.debug(args[i].toString());
+            }
         }
 
-        RpcClientHandler handler = ConnectManage.getInstance().chooseHandler();
+        RpcClientHandler handler = ConnectionManager.getInstance().chooseHandler(method.getDeclaringClass().getName());
         RpcFuture rpcFuture = handler.sendRequest(request);
         return rpcFuture.get();
     }
 
     @Override
-    public RpcFuture call(String funcName, Object... args) {
-        RpcClientHandler handler = ConnectManage.getInstance().chooseHandler();
+    public RpcFuture call(String funcName, Object... args) throws Exception {
+        RpcClientHandler handler = ConnectionManager.getInstance().chooseHandler(this.clazz.getName());
         RpcRequest request = createRequest(this.clazz.getName(), funcName, args);
         RpcFuture rpcFuture = handler.sendRequest(request);
         return rpcFuture;
@@ -81,15 +83,6 @@ public class ObjectProxy<T> implements InvocationHandler, RpcService {
             parameterTypes[i] = getClassType(args[i]);
         }
         request.setParameterTypes(parameterTypes);
-//        Method[] methods = clazz.getDeclaredMethods();
-//        for (int i = 0; i < methods.length; ++i) {
-//            // Bug: if there are 2 methods have the same name
-//            if (methods[i].getName().equals(methodName)) {
-//                parameterTypes = methods[i].getParameterTypes();
-//                request.setParameterTypes(parameterTypes); // get parameter types
-//                break;
-//            }
-//        }
 
         logger.debug(className);
         logger.debug(methodName);

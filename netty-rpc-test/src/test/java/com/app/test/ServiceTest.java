@@ -60,14 +60,14 @@ public class ServiceTest {
     }
 
     @Test
-    public void helloFutureTest1() throws ExecutionException, InterruptedException {
+    public void helloFutureTest1() throws Exception {
         RpcService helloService = rpcClient.createAsyncService(HelloService.class);
         RpcFuture result = helloService.call("hello", "World");
         Assert.assertEquals("Hello! World", result.get());
     }
 
     @Test
-    public void helloFutureTest2() throws ExecutionException, InterruptedException {
+    public void helloFutureTest2() throws Exception {
         RpcService helloService = rpcClient.createAsyncService(HelloService.class);
         Person person = new Person("Yong", "Huang");
         RpcFuture result = helloService.call("hello", person);
@@ -75,7 +75,7 @@ public class ServiceTest {
     }
 
     @Test
-    public void helloPersonFutureTest1() throws ExecutionException, InterruptedException {
+    public void helloPersonFutureTest1() throws Exception {
         RpcService helloPersonService = rpcClient.createAsyncService(PersonService.class);
         int num = 5;
         RpcFuture result = helloPersonService.call("GetTestPerson", "xiaoming", num);
