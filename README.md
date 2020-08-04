@@ -5,8 +5,9 @@ An RPC framework based on Netty, ZooKeeper and Spring
 * Simple code and framework
 * Service registry/discovery support by ZooKeeper
 * High availability, load balance and failover
-* Asynchronous/synchronous call support
-* Different serializer/deserializer support
+* Support different load balance strategy
+* Support asynchronous/synchronous call
+* Support different serializer/deserializer
 * Dead TCP connection detecting with heartbeat
 ### Design:
 ![design](https://github.com/luxiaoxun/NettyRpc/blob/master/picture/NettyRpc-design.png)
