@@ -7,6 +7,7 @@ An RPC framework based on Netty, ZooKeeper and Spring
 * High availability, load balance and failover
 * Support different load balance strategy
 * Support asynchronous/synchronous call
+* Support different versions of service
 * Support different serializer/deserializer
 * Dead TCP connection detecting with heartbeat
 ### Design:
