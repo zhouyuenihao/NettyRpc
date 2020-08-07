@@ -3,6 +3,7 @@ package com.netty.rpc.server.core;
 import com.netty.rpc.codec.Beat;
 import com.netty.rpc.codec.RpcRequest;
 import com.netty.rpc.codec.RpcResponse;
+import com.netty.rpc.util.ServiceUtil;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -65,9 +66,11 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
 
     private Object handle(RpcRequest request) throws Throwable {
         String className = request.getClassName();
-        Object serviceBean = handlerMap.get(className);
+        String version = request.getVersion();
+        String serviceKey = ServiceUtil.makeServiceKey(className, version);
+        Object serviceBean = handlerMap.get(serviceKey);
         if (serviceBean == null) {
-            logger.error("Can not find service bean with class name: " + className);
+            logger.error("Can not find service implement with interface name: {} and version: {}", className, version);
             return null;
         }
 

@@ -20,13 +20,13 @@ public class RpcLoadBalanceRandom extends RpcLoadBalance {
     }
 
     @Override
-    public RpcProtocol route(String serviceName, Map<RpcProtocol, RpcClientHandler> connectedServerNodes) throws Exception {
+    public RpcProtocol route(String serviceKey, Map<RpcProtocol, RpcClientHandler> connectedServerNodes) throws Exception {
         Map<String, List<RpcProtocol>> serviceMap = getServiceMap(connectedServerNodes);
-        List<RpcProtocol> addressList = serviceMap.get(serviceName);
+        List<RpcProtocol> addressList = serviceMap.get(serviceKey);
         if (addressList != null && addressList.size() > 0) {
             return doRoute(addressList);
         } else {
-            throw new Exception("Can not find connection for service: " + serviceName);
+            throw new Exception("Can not find connection for service: " + serviceKey);
         }
     }
 }

@@ -2,6 +2,7 @@ package com.netty.rpc.client.route;
 
 import com.netty.rpc.client.handler.RpcClientHandler;
 import com.netty.rpc.protocol.RpcProtocol;
+import com.netty.rpc.util.ServiceUtil;
 import org.apache.commons.collections4.map.HashedMap;
 
 import java.util.ArrayList;
@@ -17,17 +18,18 @@ public abstract class RpcLoadBalance {
         Map<String, List<RpcProtocol>> serviceMap = new HashedMap<>();
         if (connectedServerNodes != null && connectedServerNodes.size() > 0) {
             for (RpcProtocol rpcProtocol : connectedServerNodes.keySet()) {
-                List<RpcProtocol> rpcProtocolList = serviceMap.get(rpcProtocol.getServiceName());
+                String serviceKey = ServiceUtil.makeServiceKey(rpcProtocol.getServiceName(), rpcProtocol.getVersion());
+                List<RpcProtocol> rpcProtocolList = serviceMap.get(serviceKey);
                 if (rpcProtocolList == null) {
                     rpcProtocolList = new ArrayList<>();
                 }
                 rpcProtocolList.add(rpcProtocol);
-                serviceMap.putIfAbsent(rpcProtocol.getServiceName(), rpcProtocolList);
+                serviceMap.putIfAbsent(serviceKey, rpcProtocolList);
             }
         }
         return serviceMap;
     }
 
     // Route the connection for service key
-    public abstract RpcProtocol route(String serviceName, Map<RpcProtocol, RpcClientHandler> connectedServerNodes) throws Exception;
+    public abstract RpcProtocol route(String serviceKey, Map<RpcProtocol, RpcClientHandler> connectedServerNodes) throws Exception;
 }

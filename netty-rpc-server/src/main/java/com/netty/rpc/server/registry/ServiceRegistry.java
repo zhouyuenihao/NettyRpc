@@ -3,6 +3,7 @@ package com.netty.rpc.server.registry;
 import cn.hutool.core.util.IdUtil;
 import com.netty.rpc.config.Constant;
 import com.netty.rpc.protocol.RpcProtocol;
+import com.netty.rpc.util.ServiceUtil;
 import com.netty.rpc.zookeeper.CuratorClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,13 +38,23 @@ public class ServiceRegistry {
                     rpcProtocol.setUuid(uuid);
                     rpcProtocol.setHost(host);
                     rpcProtocol.setPort(port);
-                    rpcProtocol.setServiceName(key);
-                    String serviceData = rpcProtocol.toJson();
-                    byte[] bytes = serviceData.getBytes();
-                    String path = Constant.ZK_DATA_PATH + "-" + uuid;
-                    this.curatorClient.createPathData(path, bytes);
-                    pathList.add(path);
-                    logger.info("Registry new service:{}, host:{}, port:{}", key, host, port);
+                    String[] serviceInfo = key.split(ServiceUtil.SERVICE_CONCAT_TOKEN);
+                    if (serviceInfo.length > 0) {
+                        rpcProtocol.setServiceName(serviceInfo[0]);
+                        if (serviceInfo.length == 2) {
+                            rpcProtocol.setVersion(serviceInfo[1]);
+                        } else {
+                            rpcProtocol.setVersion("");
+                        }
+                        String serviceData = rpcProtocol.toJson();
+                        byte[] bytes = serviceData.getBytes();
+                        String path = Constant.ZK_DATA_PATH + "-" + uuid;
+                        this.curatorClient.createPathData(path, bytes);
+                        pathList.add(path);
+                        logger.info("Registry new service:{}, host:{}, port:{}", key, host, port);
+                    } else {
+                        logger.warn("Can not get service name and version");
+                    }
                 } catch (Exception e) {
                     logger.error("Register service {} fail, exception:{}", key, e.getMessage());
                 }

@@ -25,16 +25,16 @@ public class RpcClient {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T createService(Class<T> interfaceClass) {
+    public static <T> T createService(Class<T> interfaceClass, String version) {
         return (T) Proxy.newProxyInstance(
                 interfaceClass.getClassLoader(),
                 new Class<?>[]{interfaceClass},
-                new ObjectProxy<T>(interfaceClass)
+                new ObjectProxy<T>(interfaceClass, version)
         );
     }
 
-    public static <T> RpcService createAsyncService(Class<T> interfaceClass) {
-        return new ObjectProxy<T>(interfaceClass);
+    public static <T> RpcService createAsyncService(Class<T> interfaceClass, String version) {
+        return new ObjectProxy<T>(interfaceClass, version);
     }
 
     public static void submit(Runnable task) {

@@ -17,7 +17,7 @@ public class RpcLoadBalanceLRU extends RpcLoadBalance {
             new ConcurrentHashMap<String, LinkedHashMap<RpcProtocol, RpcProtocol>>();
     private long CACHE_VALID_TIME = 0;
 
-    public RpcProtocol doRoute(String serviceName, List<RpcProtocol> addressList) {
+    public RpcProtocol doRoute(String serviceKey, List<RpcProtocol> addressList) {
         // cache clear
         if (System.currentTimeMillis() > CACHE_VALID_TIME) {
             jobLRUMap.clear();
@@ -25,7 +25,7 @@ public class RpcLoadBalanceLRU extends RpcLoadBalance {
         }
 
         // init lru
-        LinkedHashMap<RpcProtocol, RpcProtocol> lruHashMap = jobLRUMap.get(serviceName);
+        LinkedHashMap<RpcProtocol, RpcProtocol> lruHashMap = jobLRUMap.get(serviceKey);
         if (lruHashMap == null) {
             /**
              * LinkedHashMap
@@ -43,7 +43,7 @@ public class RpcLoadBalanceLRU extends RpcLoadBalance {
                     }
                 }
             };
-            jobLRUMap.putIfAbsent(serviceName, lruHashMap);
+            jobLRUMap.putIfAbsent(serviceKey, lruHashMap);
         }
 
         // put new
@@ -72,13 +72,13 @@ public class RpcLoadBalanceLRU extends RpcLoadBalance {
     }
 
     @Override
-    public RpcProtocol route(String serviceName, Map<RpcProtocol, RpcClientHandler> connectedServerNodes) throws Exception {
+    public RpcProtocol route(String serviceKey, Map<RpcProtocol, RpcClientHandler> connectedServerNodes) throws Exception {
         Map<String, List<RpcProtocol>> serviceMap = getServiceMap(connectedServerNodes);
-        List<RpcProtocol> addressList = serviceMap.get(serviceName);
+        List<RpcProtocol> addressList = serviceMap.get(serviceKey);
         if (addressList != null && addressList.size() > 0) {
-            return doRoute(serviceName, addressList);
+            return doRoute(serviceKey, addressList);
         } else {
-            throw new Exception("Can not find connection for service: " + serviceName);
+            throw new Exception("Can not find connection for service: " + serviceKey);
         }
     }
 }

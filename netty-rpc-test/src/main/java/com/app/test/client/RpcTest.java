@@ -12,7 +12,7 @@ public class RpcTest {
         final RpcClient rpcClient = new RpcClient("10.217.59.164:2181");
 
         int threadNum = 1;
-        final int requestNum = 10;
+        final int requestNum = 5;
         Thread[] threads = new Thread[threadNum];
 
         long startTime = System.currentTimeMillis();
@@ -22,15 +22,15 @@ public class RpcTest {
                 @Override
                 public void run() {
                     for (int i = 0; i < requestNum; i++) {
-                        final HelloService syncClient = rpcClient.createService(HelloService.class);
+                        final HelloService syncClient = rpcClient.createService(HelloService.class, "1.0");
                         String result = syncClient.hello(Integer.toString(i));
-                        if (!result.equals("Hello! " + i)) {
+                        if (!result.equals("Hello " + i)) {
                             System.out.println("error = " + result);
                         } else {
                             System.out.println("result = " + result);
                         }
                         try {
-                            Thread.sleep(20 * 1000);
+                            Thread.sleep(5 * 1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

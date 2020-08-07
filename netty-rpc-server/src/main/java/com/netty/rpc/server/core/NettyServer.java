@@ -1,6 +1,7 @@
 package com.netty.rpc.server.core;
 
 import com.netty.rpc.server.registry.ServiceRegistry;
+import com.netty.rpc.util.ServiceUtil;
 import com.netty.rpc.util.ThreadPoolUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -28,9 +29,10 @@ public class NettyServer extends Server {
         this.serviceRegistry = new ServiceRegistry(registryAddress);
     }
 
-    public void addService(String interfaceName, Object serviceBean) {
-        logger.info("Adding service, interface: {}, bean：{}", interfaceName, serviceBean);
-        serviceMap.put(interfaceName, serviceBean);
+    public void addService(String interfaceName, String version, Object serviceBean) {
+        logger.info("Adding service, interface: {}, version: {}, bean：{}", interfaceName, version, serviceBean);
+        String serviceKey = ServiceUtil.makeServiceKey(interfaceName, version);
+        serviceMap.put(serviceKey, serviceBean);
     }
 
     public void start() {

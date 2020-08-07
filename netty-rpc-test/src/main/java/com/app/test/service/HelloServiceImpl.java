@@ -1,21 +1,21 @@
 package com.app.test.service;
 
-import com.netty.rpc.server.annotation.NettyRpcService;
+import com.netty.rpc.annotation.NettyRpcService;
 
-@NettyRpcService(HelloService.class)
+@NettyRpcService(value = HelloService.class, version = "1.0")
 public class HelloServiceImpl implements HelloService {
 
-    public HelloServiceImpl(){
+    public HelloServiceImpl() {
 
     }
 
     @Override
     public String hello(String name) {
-        return "Hello! " + name;
+        return "Hello " + name;
     }
 
     @Override
     public String hello(Person person) {
-        return "Hello! " + person.getFirstName() + " " + person.getLastName();
+        return "Hello " + person.getFirstName() + " " + person.getLastName();
     }
 }

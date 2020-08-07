@@ -1,6 +1,6 @@
 package com.app.test.service;
 
-import com.netty.rpc.server.annotation.NettyRpcService;
+import com.netty.rpc.annotation.NettyRpcService;
 
 import java.util.ArrayList;
 import java.util.List;

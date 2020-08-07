@@ -3,7 +3,6 @@ package com.netty.rpc.client.connect;
 import com.netty.rpc.client.handler.RpcClientHandler;
 import com.netty.rpc.client.handler.RpcClientInitializer;
 import com.netty.rpc.client.route.RpcLoadBalance;
-import com.netty.rpc.client.route.impl.RpcLoadBalanceConsistentHash;
 import com.netty.rpc.client.route.impl.RpcLoadBalanceRoundRobin;
 import com.netty.rpc.protocol.RpcProtocol;
 import io.netty.bootstrap.Bootstrap;
@@ -36,9 +35,8 @@ public class ConnectionManager {
     private ReentrantLock lock = new ReentrantLock();
     private Condition connected = lock.newCondition();
     private long waitTimeout = 5000;
-//    private RpcLoadBalance loadBalance = new RpcLoadBalanceRoundRobin();
-    private RpcLoadBalance loadBalance = new RpcLoadBalanceConsistentHash();
-    private volatile boolean isRuning = true;
+    private RpcLoadBalance loadBalance = new RpcLoadBalanceRoundRobin();
+    private volatile boolean isRunning = true;
 
     private ConnectionManager() {
     }
@@ -57,7 +55,7 @@ public class ConnectionManager {
             public void run() {
                 if (serviceList != null) {
                     if (serviceList.size() > 0) {
-                        //update local serverNodes cache
+                        // Update local serverNodes cache
                         HashSet<RpcProtocol> serviceSet = new HashSet<>(serviceList.size());
                         for (int i = 0; i < serviceList.size(); ++i) {
                             RpcProtocol rpcProtocol = serviceList.get(i);
@@ -97,8 +95,8 @@ public class ConnectionManager {
     }
 
     private void connectServerNode(RpcProtocol rpcProtocol) {
-        logger.info("New service: {}, uuid: {}, host: {}, port:{}", rpcProtocol.getServiceName(),
-                rpcProtocol.getUuid(), rpcProtocol.getHost(), rpcProtocol.getPort());
+        logger.info("New service: {}, version:{}, uuid: {}, host: {}, port:{}", rpcProtocol.getServiceName(),
+                rpcProtocol.getVersion(), rpcProtocol.getUuid(), rpcProtocol.getHost(), rpcProtocol.getPort());
         final InetSocketAddress remotePeer = new InetSocketAddress(rpcProtocol.getHost(), rpcProtocol.getPort());
         threadPoolExecutor.submit(new Runnable() {
             @Override
@@ -143,9 +141,9 @@ public class ConnectionManager {
         }
     }
 
-    public RpcClientHandler chooseHandler(String serviceName) throws Exception {
+    public RpcClientHandler chooseHandler(String serviceKey) throws Exception {
         int size = connectedServerNodes.values().size();
-        while (isRuning && size <= 0) {
+        while (isRunning && size <= 0) {
             try {
                 waitingForHandler();
                 size = connectedServerNodes.values().size();
@@ -153,12 +151,12 @@ public class ConnectionManager {
                 logger.error("Waiting for available service is interrupted!", e);
             }
         }
-        RpcProtocol rpcProtocol = loadBalance.route(serviceName, connectedServerNodes);
+        RpcProtocol rpcProtocol = loadBalance.route(serviceKey, connectedServerNodes);
         return connectedServerNodes.get(rpcProtocol);
     }
 
     public void stop() {
-        isRuning = false;
+        isRunning = false;
         for (RpcProtocol rpcProtocol : connectedServerNodes.keySet()) {
             RpcClientHandler handler = connectedServerNodes.get(rpcProtocol);
             handler.close();

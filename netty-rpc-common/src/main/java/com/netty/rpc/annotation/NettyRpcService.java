@@ -1,4 +1,4 @@
-package com.netty.rpc.server.annotation;
+package com.netty.rpc.annotation;
 
 import org.springframework.stereotype.Component;
 
@@ -17,4 +17,6 @@ import java.lang.annotation.Target;
 @Component
 public @interface NettyRpcService {
     Class<?> value();
+
+    String version() default "";
 }

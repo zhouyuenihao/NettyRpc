@@ -16,7 +16,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -30,27 +29,27 @@ public class ServiceTest {
 
     @Test
     public void helloTest1() {
-        HelloService helloService = rpcClient.createService(HelloService.class);
+        HelloService helloService = rpcClient.createService(HelloService.class, "1.0");
         String result = helloService.hello("World");
-        Assert.assertEquals("Hello! World", result);
+        Assert.assertEquals("Hello World", result);
     }
 
     @Test
     public void helloTest2() {
-        HelloService helloService = rpcClient.createService(HelloService.class);
+        HelloService helloService = rpcClient.createService(HelloService.class, "2.0");
         Person person = new Person("Yong", "Huang");
         String result = helloService.hello(person);
-        Assert.assertEquals("Hello! Yong Huang", result);
+        Assert.assertEquals("Hi Yong Huang", result);
     }
 
     @Test
     public void helloPersonTest() {
-        PersonService personService = rpcClient.createService(PersonService.class);
+        PersonService personService = rpcClient.createService(PersonService.class, "");
         int num = 5;
-        List<Person> persons = personService.GetTestPerson("xiaoming", num);
+        List<Person> persons = personService.GetTestPerson("jerry", num);
         List<Person> expectedPersons = new ArrayList<>();
         for (int i = 0; i < num; i++) {
-            expectedPersons.add(new Person(Integer.toString(i), "xiaoming"));
+            expectedPersons.add(new Person(Integer.toString(i), "jerry"));
         }
         assertThat(persons, equalTo(expectedPersons));
 
@@ -61,28 +60,28 @@ public class ServiceTest {
 
     @Test
     public void helloFutureTest1() throws Exception {
-        RpcService helloService = rpcClient.createAsyncService(HelloService.class);
+        RpcService helloService = rpcClient.createAsyncService(HelloService.class, "1.0");
         RpcFuture result = helloService.call("hello", "World");
-        Assert.assertEquals("Hello! World", result.get());
+        Assert.assertEquals("Hello World", result.get());
     }
 
     @Test
     public void helloFutureTest2() throws Exception {
-        RpcService helloService = rpcClient.createAsyncService(HelloService.class);
+        RpcService helloService = rpcClient.createAsyncService(HelloService.class, "1.0");
         Person person = new Person("Yong", "Huang");
         RpcFuture result = helloService.call("hello", person);
-        Assert.assertEquals("Hello! Yong Huang", result.get());
+        Assert.assertEquals("Hello Yong Huang", result.get());
     }
 
     @Test
     public void helloPersonFutureTest1() throws Exception {
-        RpcService helloPersonService = rpcClient.createAsyncService(PersonService.class);
+        RpcService helloPersonService = rpcClient.createAsyncService(PersonService.class, "");
         int num = 5;
-        RpcFuture result = helloPersonService.call("GetTestPerson", "xiaoming", num);
+        RpcFuture result = helloPersonService.call("GetTestPerson", "jerry", num);
         List<Person> persons = (List<Person>) result.get();
         List<Person> expectedPersons = new ArrayList<>();
         for (int i = 0; i < num; i++) {
-            expectedPersons.add(new Person(Integer.toString(i), "xiaoming"));
+            expectedPersons.add(new Person(Integer.toString(i), "jerry"));
         }
         assertThat(persons, equalTo(expectedPersons));
 

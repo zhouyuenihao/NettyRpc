@@ -4,6 +4,7 @@ import com.netty.rpc.client.connect.ConnectionManager;
 import com.netty.rpc.client.handler.RpcFuture;
 import com.netty.rpc.client.handler.RpcClientHandler;
 import com.netty.rpc.codec.RpcRequest;
+import com.netty.rpc.util.ServiceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,9 +18,11 @@ import java.util.UUID;
 public class ObjectProxy<T> implements InvocationHandler, RpcService {
     private static final Logger logger = LoggerFactory.getLogger(ObjectProxy.class);
     private Class<T> clazz;
+    private String version;
 
-    public ObjectProxy(Class<T> clazz) {
+    public ObjectProxy(Class<T> clazz, String version) {
         this.clazz = clazz;
+        this.version = version;
     }
 
     @Override
@@ -45,6 +48,7 @@ public class ObjectProxy<T> implements InvocationHandler, RpcService {
         request.setMethodName(method.getName());
         request.setParameterTypes(method.getParameterTypes());
         request.setParameters(args);
+        request.setVersion(version);
         // Debug
         if (logger.isDebugEnabled()) {
             logger.debug(method.getDeclaringClass().getName());
@@ -57,14 +61,16 @@ public class ObjectProxy<T> implements InvocationHandler, RpcService {
             }
         }
 
-        RpcClientHandler handler = ConnectionManager.getInstance().chooseHandler(method.getDeclaringClass().getName());
+        String serviceKey = ServiceUtil.makeServiceKey(method.getDeclaringClass().getName(), version);
+        RpcClientHandler handler = ConnectionManager.getInstance().chooseHandler(serviceKey);
         RpcFuture rpcFuture = handler.sendRequest(request);
         return rpcFuture.get();
     }
 
     @Override
     public RpcFuture call(String funcName, Object... args) throws Exception {
-        RpcClientHandler handler = ConnectionManager.getInstance().chooseHandler(this.clazz.getName());
+        String serviceKey = ServiceUtil.makeServiceKey(this.clazz.getName(), version);
+        RpcClientHandler handler = ConnectionManager.getInstance().chooseHandler(serviceKey);
         RpcRequest request = createRequest(this.clazz.getName(), funcName, args);
         RpcFuture rpcFuture = handler.sendRequest(request);
         return rpcFuture;
@@ -76,6 +82,7 @@ public class ObjectProxy<T> implements InvocationHandler, RpcService {
         request.setClassName(className);
         request.setMethodName(methodName);
         request.setParameters(args);
+        request.setVersion(version);
 
         Class[] parameterTypes = new Class[args.length];
         // Get the right class type
@@ -84,13 +91,16 @@ public class ObjectProxy<T> implements InvocationHandler, RpcService {
         }
         request.setParameterTypes(parameterTypes);
 
-        logger.debug(className);
-        logger.debug(methodName);
-        for (int i = 0; i < parameterTypes.length; ++i) {
-            logger.debug(parameterTypes[i].getName());
-        }
-        for (int i = 0; i < args.length; ++i) {
-            logger.debug(args[i].toString());
+        // Debug
+        if (logger.isDebugEnabled()) {
+            logger.debug(className);
+            logger.debug(methodName);
+            for (int i = 0; i < parameterTypes.length; ++i) {
+                logger.debug(parameterTypes[i].getName());
+            }
+            for (int i = 0; i < args.length; ++i) {
+                logger.debug(args[i].toString());
+            }
         }
 
         return request;

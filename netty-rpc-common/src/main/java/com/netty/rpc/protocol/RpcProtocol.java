@@ -12,6 +12,8 @@ public class RpcProtocol implements Serializable {
     private int port;
     // interface name
     private String serviceName;
+    // service version
+    private String version;
 
     public String toJson() {
         String json = JsonUtil.objectToJson(this);
@@ -30,12 +32,13 @@ public class RpcProtocol implements Serializable {
         return port == that.port &&
                 uuid.equals(that.uuid) &&
                 host.equals(that.host) &&
-                serviceName.equals(that.serviceName);
+                serviceName.equals(that.serviceName) &&
+                version.equals(this.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, host, port, serviceName);
+        return Objects.hash(uuid, host, port, serviceName, version);
     }
 
     @Override
@@ -73,5 +76,13 @@ public class RpcProtocol implements Serializable {
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

@@ -1,6 +1,6 @@
 package com.netty.rpc.server;
 
-import com.netty.rpc.server.annotation.NettyRpcService;
+import com.netty.rpc.annotation.NettyRpcService;
 import com.netty.rpc.server.core.NettyServer;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeansException;
@@ -26,8 +26,10 @@ public class RpcServer extends NettyServer implements ApplicationContextAware, I
         Map<String, Object> serviceBeanMap = ctx.getBeansWithAnnotation(NettyRpcService.class);
         if (MapUtils.isNotEmpty(serviceBeanMap)) {
             for (Object serviceBean : serviceBeanMap.values()) {
-                String interfaceName = serviceBean.getClass().getAnnotation(NettyRpcService.class).value().getName();
-                super.addService(interfaceName, serviceBean);
+                NettyRpcService nettyRpcService = serviceBean.getClass().getAnnotation(NettyRpcService.class);
+                String interfaceName = nettyRpcService.value().getName();
+                String version = nettyRpcService.version();
+                super.addService(interfaceName, version, serviceBean);
             }
         }
     }
