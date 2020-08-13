@@ -63,9 +63,9 @@ public class NettyServer extends Server {
                     future.channel().closeFuture().sync();
                 } catch (Exception e) {
                     if (e instanceof InterruptedException) {
-                        logger.info("Rpc server remoting server stop.");
+                        logger.info("Rpc server remoting server stop");
                     } else {
-                        logger.error("Rpc server remoting server error.", e);
+                        logger.error("Rpc server remoting server error", e);
                     }
                 } finally {
                     try {

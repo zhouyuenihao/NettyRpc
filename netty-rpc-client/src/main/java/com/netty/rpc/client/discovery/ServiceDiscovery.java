@@ -29,8 +29,8 @@ public class ServiceDiscovery {
 
     private void discoveryService() {
         try {
-            // Get init service info
-            logger.info("Get init service info");
+            // Get initial service info
+            logger.info("Get initial service info");
             getServiceAndUpdateServer();
             // Add watch listener
             curatorClient.watchPathChildrenNode(Constant.ZK_REGISTRY_PATH, new PathChildrenCacheListener() {
@@ -38,10 +38,14 @@ public class ServiceDiscovery {
                 public void childEvent(CuratorFramework curatorFramework, PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
                     PathChildrenCacheEvent.Type type = pathChildrenCacheEvent.getType();
                     switch (type) {
+                        case CONNECTION_RECONNECTED:
+                            logger.info("Reconnected to zk, try to get latest service list");
+                            getServiceAndUpdateServer();
+                            break;
                         case CHILD_ADDED:
                         case CHILD_UPDATED:
                         case CHILD_REMOVED:
-                            logger.info("Service info updated, try to get latest service list");
+                            logger.info("Service info changed, try to get latest service list");
                             getServiceAndUpdateServer();
                             break;
                     }
@@ -63,8 +67,7 @@ public class ServiceDiscovery {
                 RpcProtocol rpcProtocol = RpcProtocol.fromJson(json);
                 dataList.add(rpcProtocol);
             }
-            logger.debug("Node data: {}", dataList);
-            logger.debug("Service discovery triggered updating connected server node.");
+            logger.debug("Service node data: {}", dataList);
             //Update the service info based on the latest data
             UpdateConnectedServer(dataList);
         } catch (Exception e) {

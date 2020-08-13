@@ -37,7 +37,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
     public void channelRead0(final ChannelHandlerContext ctx, final RpcRequest request) {
         // filter beat ping
         if (Beat.BEAT_ID.equalsIgnoreCase(request.getRequestId())) {
-            logger.info("Server read beat-ping.");
+            logger.info("Server read heartbeat ping");
             return;
         }
 

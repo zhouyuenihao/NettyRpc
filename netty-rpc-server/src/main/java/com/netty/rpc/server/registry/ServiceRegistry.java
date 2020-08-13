@@ -1,10 +1,12 @@
 package com.netty.rpc.server.registry;
 
-import cn.hutool.core.util.IdUtil;
 import com.netty.rpc.config.Constant;
 import com.netty.rpc.protocol.RpcProtocol;
 import com.netty.rpc.util.ServiceUtil;
 import com.netty.rpc.zookeeper.CuratorClient;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.framework.state.ConnectionStateListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,37 +30,42 @@ public class ServiceRegistry {
     }
 
     public void registerService(String host, int port, Map<String, Object> serviceMap) {
-        //register service info, format uuid:ip:port
-        if (serviceMap.size() > 0) {
-            for (String key : serviceMap.keySet()) {
-                try {
-                    RpcProtocol rpcProtocol = new RpcProtocol();
-                    //Add an uuid when register the service so we can distinguish the same ip:port service
-                    String uuid = IdUtil.objectId();
-                    rpcProtocol.setUuid(uuid);
-                    rpcProtocol.setHost(host);
-                    rpcProtocol.setPort(port);
-                    String[] serviceInfo = key.split(ServiceUtil.SERVICE_CONCAT_TOKEN);
-                    if (serviceInfo.length > 0) {
-                        rpcProtocol.setServiceName(serviceInfo[0]);
-                        if (serviceInfo.length == 2) {
-                            rpcProtocol.setVersion(serviceInfo[1]);
-                        } else {
-                            rpcProtocol.setVersion("");
-                        }
-                        String serviceData = rpcProtocol.toJson();
-                        byte[] bytes = serviceData.getBytes();
-                        String path = Constant.ZK_DATA_PATH + "-" + uuid;
-                        this.curatorClient.createPathData(path, bytes);
-                        pathList.add(path);
-                        logger.info("Registry new service:{}, host:{}, port:{}", key, host, port);
+        // Register service info
+        for (String key : serviceMap.keySet()) {
+            try {
+                RpcProtocol rpcProtocol = new RpcProtocol();
+                rpcProtocol.setHost(host);
+                rpcProtocol.setPort(port);
+                String[] serviceInfo = key.split(ServiceUtil.SERVICE_CONCAT_TOKEN);
+                if (serviceInfo.length > 0) {
+                    rpcProtocol.setServiceName(serviceInfo[0]);
+                    if (serviceInfo.length == 2) {
+                        rpcProtocol.setVersion(serviceInfo[1]);
                     } else {
-                        logger.warn("Can not get service name and version");
+                        rpcProtocol.setVersion("");
                     }
-                } catch (Exception e) {
-                    logger.error("Register service {} fail, exception:{}", key, e.getMessage());
+                    String serviceData = rpcProtocol.toJson();
+                    byte[] bytes = serviceData.getBytes();
+                    String path = Constant.ZK_DATA_PATH + "-" + rpcProtocol.hashCode();
+                    this.curatorClient.createPathData(path, bytes);
+                    pathList.add(path);
+                    logger.info("Register new service: {}, host: {}, port: {}", key, host, port);
+                } else {
+                    logger.warn("Can not get service name and version: {}" + key);
                 }
+            } catch (Exception e) {
+                logger.error("Register service {} fail, exception: {}", key, e.getMessage());
             }
+
+            curatorClient.addConnectionStateListener(new ConnectionStateListener() {
+                @Override
+                public void stateChanged(CuratorFramework curatorFramework, ConnectionState connectionState) {
+                    if (connectionState == ConnectionState.RECONNECTED) {
+                        logger.info("Connection state: {}, register service after reconnected", connectionState);
+                        registerService(host, port, serviceMap);
+                    }
+                }
+            });
         }
     }
 

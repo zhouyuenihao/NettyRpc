@@ -1,8 +1,10 @@
 package com.netty.rpc.client.handler;
 
+import com.netty.rpc.client.connect.ConnectionManager;
 import com.netty.rpc.codec.Beat;
 import com.netty.rpc.codec.RpcRequest;
 import com.netty.rpc.codec.RpcResponse;
+import com.netty.rpc.protocol.RpcProtocol;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -21,6 +23,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
     private ConcurrentHashMap<String, RpcFuture> pendingRPC = new ConcurrentHashMap<>();
     private volatile Channel channel;
     private SocketAddress remotePeer;
+    private RpcProtocol rpcProtocol;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -81,5 +84,15 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
         } else {
             super.userEventTriggered(ctx, evt);
         }
+    }
+
+    public void setRpcProtocol(RpcProtocol rpcProtocol) {
+        this.rpcProtocol = rpcProtocol;
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        ConnectionManager.getInstance().removeHandler(rpcProtocol);
     }
 }

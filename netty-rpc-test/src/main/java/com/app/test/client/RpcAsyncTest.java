@@ -15,7 +15,7 @@ public class RpcAsyncTest {
         final RpcClient rpcClient = new RpcClient("10.217.59.164:2181");
 
         int threadNum = 1;
-        final int requestNum = 10;
+        final int requestNum = 100;
         Thread[] threads = new Thread[threadNum];
 
         long startTime = System.currentTimeMillis();
@@ -33,6 +33,11 @@ public class RpcAsyncTest {
                                 System.out.println("error = " + result);
                             } else {
                                 System.out.println("result = " + result);
+                            }
+                            try {
+                                Thread.sleep(5 * 1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
                         } catch (Exception e) {
                             System.out.println(e.toString());

@@ -7,6 +7,7 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
+import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.Watcher;
@@ -19,7 +20,8 @@ public class CuratorClient {
     public CuratorClient(String connectString, String namespace, int sessionTimeout, int connectionTimeout) {
         client = CuratorFrameworkFactory.builder().namespace(namespace).connectString(connectString)
                 .sessionTimeoutMs(sessionTimeout).connectionTimeoutMs(connectionTimeout)
-                .retryPolicy(new ExponentialBackoffRetry(2000, 10)).build();
+                .retryPolicy(new ExponentialBackoffRetry(1000, 10))
+                .build();
         client.start();
     }
 
@@ -33,6 +35,10 @@ public class CuratorClient {
 
     public CuratorFramework getClient() {
         return client;
+    }
+
+    public void addConnectionStateListener(ConnectionStateListener connectionStateListener) {
+        client.getConnectionStateListenable().addListener(connectionStateListener);
     }
 
     public void createPathData(String path, byte[] data) throws Exception {

@@ -7,8 +7,9 @@ import java.util.Objects;
 
 public class RpcProtocol implements Serializable {
     private static final long serialVersionUID = -1102180003395190700L;
-    private String uuid;
+    // service host
     private String host;
+    // service port
     private int port;
     // interface name
     private String serviceName;
@@ -30,28 +31,19 @@ public class RpcProtocol implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         RpcProtocol that = (RpcProtocol) o;
         return port == that.port &&
-                uuid.equals(that.uuid) &&
                 host.equals(that.host) &&
                 serviceName.equals(that.serviceName) &&
-                version.equals(this.version);
+                version.equals(that.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(uuid, host, port, serviceName, version);
+        return Objects.hash(host, port, serviceName, version);
     }
 
     @Override
     public String toString() {
         return toJson();
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
     }
 
     public String getHost() {
