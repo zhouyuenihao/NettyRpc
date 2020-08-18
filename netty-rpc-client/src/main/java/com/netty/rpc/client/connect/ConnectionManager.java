@@ -5,6 +5,7 @@ import com.netty.rpc.client.handler.RpcClientInitializer;
 import com.netty.rpc.client.route.RpcLoadBalance;
 import com.netty.rpc.client.route.impl.RpcLoadBalanceRoundRobin;
 import com.netty.rpc.protocol.RpcProtocol;
+import com.netty.rpc.protocol.RpcServiceProtocol;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -55,7 +56,7 @@ public class ConnectionManager {
         // Once service info is updated on ZK, will trigger this function
         // Actually client should only care about the service it is using
         if (serviceList != null && serviceList.size() > 0) {
-            // Update local serverNodes cache
+            // Update local server nodes cache
             HashSet<RpcProtocol> serviceSet = new HashSet<>(serviceList.size());
             for (int i = 0; i < serviceList.size(); ++i) {
                 RpcProtocol rpcProtocol = serviceList.get(i);
@@ -65,7 +66,6 @@ public class ConnectionManager {
             // Add new server info
             for (final RpcProtocol rpcProtocol : serviceSet) {
                 if (!rpcProtocolSet.contains(rpcProtocol)) {
-                    rpcProtocolSet.add(rpcProtocol);
                     connectServerNode(rpcProtocol);
                 }
             }
@@ -97,8 +97,15 @@ public class ConnectionManager {
     }
 
     private void connectServerNode(RpcProtocol rpcProtocol) {
-        logger.info("New service: {}, version:{}, host: {}, port:{}", rpcProtocol.getServiceName(),
-                rpcProtocol.getVersion(), rpcProtocol.getHost(), rpcProtocol.getPort());
+        if (rpcProtocol.getServiceProtocolList() == null || rpcProtocol.getServiceProtocolList().isEmpty()) {
+            logger.info("No service on node, host: {}, port: {}", rpcProtocol.getHost(), rpcProtocol.getPort());
+            return;
+        }
+        rpcProtocolSet.add(rpcProtocol);
+        logger.info("New service node, host: {}, port: {}", rpcProtocol.getHost(), rpcProtocol.getPort());
+        for (RpcServiceProtocol serviceProtocol : rpcProtocol.getServiceProtocolList()) {
+            logger.info("New service info, name: {}, version: {}", serviceProtocol.getServiceName(), serviceProtocol.getVersion());
+        }
         final InetSocketAddress remotePeer = new InetSocketAddress(rpcProtocol.getHost(), rpcProtocol.getPort());
         threadPoolExecutor.submit(new Runnable() {
             @Override
@@ -168,6 +175,7 @@ public class ConnectionManager {
     public void removeHandler(RpcProtocol rpcProtocol) {
         rpcProtocolSet.remove(rpcProtocol);
         connectedServerNodes.remove(rpcProtocol);
+        logger.info("Remove one connection, host: {}, port: {}", rpcProtocol.getHost(), rpcProtocol.getPort());
     }
 
     public void stop() {
