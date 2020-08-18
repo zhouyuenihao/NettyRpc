@@ -5,7 +5,7 @@ import com.netty.rpc.client.handler.RpcClientInitializer;
 import com.netty.rpc.client.route.RpcLoadBalance;
 import com.netty.rpc.client.route.impl.RpcLoadBalanceRoundRobin;
 import com.netty.rpc.protocol.RpcProtocol;
-import com.netty.rpc.protocol.RpcServiceProtocol;
+import com.netty.rpc.protocol.RpcServiceInfo;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -97,13 +97,13 @@ public class ConnectionManager {
     }
 
     private void connectServerNode(RpcProtocol rpcProtocol) {
-        if (rpcProtocol.getServiceProtocolList() == null || rpcProtocol.getServiceProtocolList().isEmpty()) {
+        if (rpcProtocol.getServiceInfoList() == null || rpcProtocol.getServiceInfoList().isEmpty()) {
             logger.info("No service on node, host: {}, port: {}", rpcProtocol.getHost(), rpcProtocol.getPort());
             return;
         }
         rpcProtocolSet.add(rpcProtocol);
         logger.info("New service node, host: {}, port: {}", rpcProtocol.getHost(), rpcProtocol.getPort());
-        for (RpcServiceProtocol serviceProtocol : rpcProtocol.getServiceProtocolList()) {
+        for (RpcServiceInfo serviceProtocol : rpcProtocol.getServiceInfoList()) {
             logger.info("New service info, name: {}, version: {}", serviceProtocol.getServiceName(), serviceProtocol.getVersion());
         }
         final InetSocketAddress remotePeer = new InetSocketAddress(rpcProtocol.getHost(), rpcProtocol.getPort());

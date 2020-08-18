@@ -5,7 +5,7 @@ import com.netty.rpc.util.JsonUtil;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class RpcServiceProtocol implements Serializable {
+public class RpcServiceInfo implements Serializable {
     // interface name
     private String serviceName;
     // service version
@@ -31,7 +31,7 @@ public class RpcServiceProtocol implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        RpcServiceProtocol that = (RpcServiceProtocol) o;
+        RpcServiceInfo that = (RpcServiceInfo) o;
         return Objects.equals(serviceName, that.serviceName) &&
                 Objects.equals(version, that.version);
     }

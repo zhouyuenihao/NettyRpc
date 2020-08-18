@@ -2,7 +2,7 @@ package com.netty.rpc.server.registry;
 
 import com.netty.rpc.config.Constant;
 import com.netty.rpc.protocol.RpcProtocol;
-import com.netty.rpc.protocol.RpcServiceProtocol;
+import com.netty.rpc.protocol.RpcServiceInfo;
 import com.netty.rpc.util.ServiceUtil;
 import com.netty.rpc.zookeeper.CuratorClient;
 import org.apache.curator.framework.CuratorFramework;
@@ -32,19 +32,19 @@ public class ServiceRegistry {
 
     public void registerService(String host, int port, Map<String, Object> serviceMap) {
         // Register service info
-        List<RpcServiceProtocol> serviceProtocolList = new ArrayList<>();
+        List<RpcServiceInfo> serviceInfoList = new ArrayList<>();
         for (String key : serviceMap.keySet()) {
             String[] serviceInfo = key.split(ServiceUtil.SERVICE_CONCAT_TOKEN);
             if (serviceInfo.length > 0) {
-                RpcServiceProtocol rpcServiceProtocol = new RpcServiceProtocol();
-                rpcServiceProtocol.setServiceName(serviceInfo[0]);
+                RpcServiceInfo rpcServiceInfo = new RpcServiceInfo();
+                rpcServiceInfo.setServiceName(serviceInfo[0]);
                 if (serviceInfo.length == 2) {
-                    rpcServiceProtocol.setVersion(serviceInfo[1]);
+                    rpcServiceInfo.setVersion(serviceInfo[1]);
                 } else {
-                    rpcServiceProtocol.setVersion("");
+                    rpcServiceInfo.setVersion("");
                 }
                 logger.info("Register new service: {} ", key);
-                serviceProtocolList.add(rpcServiceProtocol);
+                serviceInfoList.add(rpcServiceInfo);
             } else {
                 logger.warn("Can not get service name and version: {} ", key);
             }
@@ -53,13 +53,13 @@ public class ServiceRegistry {
             RpcProtocol rpcProtocol = new RpcProtocol();
             rpcProtocol.setHost(host);
             rpcProtocol.setPort(port);
-            rpcProtocol.setServiceProtocolList(serviceProtocolList);
+            rpcProtocol.setServiceInfoList(serviceInfoList);
             String serviceData = rpcProtocol.toJson();
             byte[] bytes = serviceData.getBytes();
             String path = Constant.ZK_DATA_PATH + "-" + rpcProtocol.hashCode();
             this.curatorClient.createPathData(path, bytes);
             pathList.add(path);
-            logger.info("Register {} new service, host: {}, port: {}", serviceProtocolList.size(), host, port);
+            logger.info("Register {} new service, host: {}, port: {}", serviceInfoList.size(), host, port);
         } catch (Exception e) {
             logger.error("Register service fail, exception: {}", e.getMessage());
         }
