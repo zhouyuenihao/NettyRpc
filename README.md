@@ -20,20 +20,20 @@ An RPC framework based on Netty, ZooKeeper and Spring
 			String hello(Person person);
 		}
 
-2. Implement the interface with annotation @RpcService:
+2. Implement the interface with annotation @NettyRpcService:
 
-		@RpcService(HelloService.class)
+		@NettyRpcService(HelloService.class, version = "1.0")
 		public class HelloServiceImpl implements HelloService {
 			public HelloServiceImpl(){}
 			
 			@Override
 			public String hello(String name) {
-				return "Hello! " + name;
+				return "Hello " + name;
 			}
 
 			@Override
 			public String hello(Person person) {
-				return "Hello! " + person.getFirstName() + " " + person.getLastName();
+				return "Hello " + person.getFirstName() + " " + person.getLastName();
 			}
 		}
 
@@ -52,11 +52,11 @@ An RPC framework based on Netty, ZooKeeper and Spring
 		final RpcClient rpcClient = new RpcClient("127.0.0.1:2181");
 		
 		// Sync call
-		HelloService helloService = rpcClient.createService(HelloService.class);
+		HelloService helloService = rpcClient.createService(HelloService.class, "1.0");
 		String result = helloService.hello("World");
 		
 		// Async call
-		RpcService client = rpcClient.createAsyncService(HelloService.class);
+		RpcService client = rpcClient.createAsyncService(HelloService.class, "2.0");
 		RPCFuture helloFuture = client.call("hello", "World");
 		String result = (String) helloFuture.get(3000, TimeUnit.MILLISECONDS);
 
