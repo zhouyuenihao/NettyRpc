@@ -1,7 +1,6 @@
 package com.app.test;
 
 import com.app.test.service.Foo;
-import com.netty.rpc.annotation.RpcAutowired;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class ServiceTest2 {
     @Autowired
     private Foo foo;
+
     @Test
     public void say(){
         String result = foo.say("Foo");
