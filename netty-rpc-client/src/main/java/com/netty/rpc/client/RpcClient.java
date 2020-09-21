@@ -5,6 +5,8 @@ import com.netty.rpc.client.proxy.RpcService;
 import com.netty.rpc.client.proxy.ObjectProxy;
 import com.netty.rpc.client.connect.ConnectionManager;
 import com.netty.rpc.client.discovery.ServiceDiscovery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -24,6 +26,8 @@ import java.util.concurrent.TimeUnit;
  * @author g-yu
  */
 public class RpcClient implements ApplicationContextAware, InitializingBean, DisposableBean {
+    private static final Logger logger = LoggerFactory.getLogger(RpcClient.class);
+
     private ServiceDiscovery serviceDiscovery;
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16,
             600L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(1000));
@@ -81,7 +85,7 @@ public class RpcClient implements ApplicationContextAware, InitializingBean, Dis
                     }
                 }
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                logger.error(e.toString());
             }
         }
     }
