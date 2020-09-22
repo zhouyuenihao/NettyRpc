@@ -5,8 +5,6 @@ import com.netty.rpc.client.proxy.RpcService;
 import com.netty.rpc.client.proxy.ObjectProxy;
 import com.netty.rpc.client.connect.ConnectionManager;
 import com.netty.rpc.client.discovery.ServiceDiscovery;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -25,9 +23,7 @@ import java.util.concurrent.TimeUnit;
  * @author luxiaoxun
  * @author g-yu
  */
-public class RpcClient implements ApplicationContextAware, InitializingBean, DisposableBean {
-    private static final Logger logger = LoggerFactory.getLogger(RpcClient.class);
-
+public class RpcClient implements ApplicationContextAware, DisposableBean {
     private ServiceDiscovery serviceDiscovery;
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16,
             600L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(1000));
@@ -37,16 +33,16 @@ public class RpcClient implements ApplicationContextAware, InitializingBean, Dis
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T createService(Class<T> interfaceClass, String version) {
+    public static <T,P> T createService(Class<T> interfaceClass, String version) {
         return (T) Proxy.newProxyInstance(
                 interfaceClass.getClassLoader(),
                 new Class<?>[]{interfaceClass},
-                new ObjectProxy<T>(interfaceClass, version)
+                new ObjectProxy<T,P>(interfaceClass, version)
         );
     }
 
-    public static <T> RpcService createAsyncService(Class<T> interfaceClass, String version) {
-        return new ObjectProxy<T>(interfaceClass, version);
+    public static <T,P> RpcService createAsyncService(Class<T> interfaceClass, String version) {
+        return new ObjectProxy<T,P>(interfaceClass, version);
     }
 
     public static void submit(Runnable task) {
@@ -65,11 +61,6 @@ public class RpcClient implements ApplicationContextAware, InitializingBean, Dis
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-
-    }
-
-    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         String[] beanNames = applicationContext.getBeanDefinitionNames();
         for (String beanName : beanNames) {
@@ -85,7 +76,7 @@ public class RpcClient implements ApplicationContextAware, InitializingBean, Dis
                     }
                 }
             } catch (IllegalAccessException e) {
-                logger.error(e.toString());
+                e.printStackTrace();
             }
         }
     }
