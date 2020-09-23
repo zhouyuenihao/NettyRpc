@@ -1,6 +1,10 @@
 package com.app.test;
 
 import com.app.test.service.Foo;
+import com.app.test.service.HelloService;
+import com.netty.rpc.client.RpcClient;
+import com.netty.rpc.client.handler.RpcFuture;
+import com.netty.rpc.client.proxy.RpcService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,10 +17,19 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class ServiceTest2 {
     @Autowired
     private Foo foo;
+    @Autowired
+    private RpcClient rpcClient;
 
     @Test
-    public void say(){
+    public void say() {
         String result = foo.say("Foo");
         Assert.assertEquals("Hello Foo", result);
+    }
+
+    @Test
+    public void mr() throws Exception {
+        RpcService<HelloService, String> helloService = rpcClient.createAsyncService(HelloService.class, "1.0");
+        RpcFuture result = helloService.call(HelloService::hello, "World");
+        Assert.assertEquals("Hello World", result.get());
     }
 }

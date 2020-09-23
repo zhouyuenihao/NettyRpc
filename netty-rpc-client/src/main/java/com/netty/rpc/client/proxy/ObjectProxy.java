@@ -15,7 +15,7 @@ import java.util.UUID;
 /**
  * Created by luxiaoxun on 2016-03-16.
  */
-public class ObjectProxy<T> implements InvocationHandler, RpcService {
+public class ObjectProxy<T,P> implements InvocationHandler, RpcService<T,P> {
     private static final Logger logger = LoggerFactory.getLogger(ObjectProxy.class);
     private Class<T> clazz;
     private String version;
@@ -72,6 +72,15 @@ public class ObjectProxy<T> implements InvocationHandler, RpcService {
         String serviceKey = ServiceUtil.makeServiceKey(this.clazz.getName(), version);
         RpcClientHandler handler = ConnectionManager.getInstance().chooseHandler(serviceKey);
         RpcRequest request = createRequest(this.clazz.getName(), funcName, args);
+        RpcFuture rpcFuture = handler.sendRequest(request);
+        return rpcFuture;
+    }
+
+    @Override
+    public RpcFuture call(RpcFunction<T, P> fn, Object... args) throws Exception {
+        String serviceKey = ServiceUtil.makeServiceKey(this.clazz.getName(), version);
+        RpcClientHandler handler = ConnectionManager.getInstance().chooseHandler(serviceKey);
+        RpcRequest request = createRequest(this.clazz.getName(), fn.getName(), args);
         RpcFuture rpcFuture = handler.sendRequest(request);
         return rpcFuture;
     }
