@@ -18,4 +18,9 @@ public class HelloServiceImpl implements HelloService {
     public String hello(Person person) {
         return "Hello " + person.getFirstName() + " " + person.getLastName();
     }
+
+    @Override
+    public String substring(String str, Integer indexOf) {
+        return str.substring(0, indexOf);
+    }
 }

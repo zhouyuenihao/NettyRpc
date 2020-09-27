@@ -6,7 +6,7 @@ import com.netty.rpc.client.handler.RpcFuture;
  * Created by luxiaoxun on 2016/3/16.
  * @author g-yu
  */
-public interface RpcService<T,P> {
+public interface RpcService<T,P,FN extends SerializableFunction<T>> {
     RpcFuture call(String funcName, Object... args) throws Exception;
 
     /**
@@ -16,6 +16,6 @@ public interface RpcService<T,P> {
      * @return
      * @throws Exception
      */
-    RpcFuture call(RpcFunction<T, P> fn, Object... args) throws Exception;
+    RpcFuture call(FN fn, Object... args) throws Exception;
 
 }

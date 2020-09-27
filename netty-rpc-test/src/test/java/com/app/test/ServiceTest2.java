@@ -4,6 +4,8 @@ import com.app.test.service.Foo;
 import com.app.test.service.HelloService;
 import com.netty.rpc.client.RpcClient;
 import com.netty.rpc.client.handler.RpcFuture;
+import com.netty.rpc.client.proxy.RpcFunction;
+import com.netty.rpc.client.proxy.RpcFunction2;
 import com.netty.rpc.client.proxy.RpcService;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,8 +30,13 @@ public class ServiceTest2 {
 
     @Test
     public void mr() throws Exception {
-        RpcService<HelloService, String> helloService = rpcClient.createAsyncService(HelloService.class, "1.0");
+        RpcService<HelloService, String, RpcFunction<HelloService,String>> helloService = rpcClient.createAsyncService(HelloService.class, "1.0");
         RpcFuture result = helloService.call(HelloService::hello, "World");
         Assert.assertEquals("Hello World", result.get());
+
+        RpcService<HelloService, String, RpcFunction2<HelloService, String, Integer>> helloServicev1 = rpcClient.createAsyncService(HelloService.class, "1.0");
+        RpcFuture resultv1 = helloServicev1.call(HelloService::substring, "World", 2);
+        Assert.assertEquals("Wo", resultv1.get());
+
     }
 }

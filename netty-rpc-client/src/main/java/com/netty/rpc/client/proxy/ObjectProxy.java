@@ -15,7 +15,7 @@ import java.util.UUID;
 /**
  * Created by luxiaoxun on 2016-03-16.
  */
-public class ObjectProxy<T,P> implements InvocationHandler, RpcService<T,P> {
+public class ObjectProxy<T, P> implements InvocationHandler, RpcService<T, P, SerializableFunction<T>> {
     private static final Logger logger = LoggerFactory.getLogger(ObjectProxy.class);
     private Class<T> clazz;
     private String version;
@@ -77,10 +77,10 @@ public class ObjectProxy<T,P> implements InvocationHandler, RpcService<T,P> {
     }
 
     @Override
-    public RpcFuture call(RpcFunction<T, P> fn, Object... args) throws Exception {
+    public RpcFuture call(SerializableFunction<T> tSerializableFunction, Object... args) throws Exception {
         String serviceKey = ServiceUtil.makeServiceKey(this.clazz.getName(), version);
         RpcClientHandler handler = ConnectionManager.getInstance().chooseHandler(serviceKey);
-        RpcRequest request = createRequest(this.clazz.getName(), fn.getName(), args);
+        RpcRequest request = createRequest(this.clazz.getName(), tSerializableFunction.getName(), args);
         RpcFuture rpcFuture = handler.sendRequest(request);
         return rpcFuture;
     }
@@ -92,7 +92,6 @@ public class ObjectProxy<T,P> implements InvocationHandler, RpcService<T,P> {
         request.setMethodName(methodName);
         request.setParameters(args);
         request.setVersion(version);
-
         Class[] parameterTypes = new Class[args.length];
         // Get the right class type
         for (int i = 0; i < args.length; i++) {
@@ -117,26 +116,6 @@ public class ObjectProxy<T,P> implements InvocationHandler, RpcService<T,P> {
 
     private Class<?> getClassType(Object obj) {
         Class<?> classType = obj.getClass();
-        String typeName = classType.getName();
-        switch (typeName) {
-            case "java.lang.Integer":
-                return Integer.TYPE;
-            case "java.lang.Long":
-                return Long.TYPE;
-            case "java.lang.Float":
-                return Float.TYPE;
-            case "java.lang.Double":
-                return Double.TYPE;
-            case "java.lang.Character":
-                return Character.TYPE;
-            case "java.lang.Boolean":
-                return Boolean.TYPE;
-            case "java.lang.Short":
-                return Short.TYPE;
-            case "java.lang.Byte":
-                return Byte.TYPE;
-        }
-
         return classType;
     }
 
