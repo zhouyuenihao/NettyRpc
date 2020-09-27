@@ -45,8 +45,8 @@ public class ServiceTest {
     @Test
     public void helloPersonTest() {
         PersonService personService = rpcClient.createService(PersonService.class, "");
-        int num = 5;
-        List<Person> persons = personService.GetTestPerson("jerry", num);
+        Integer num = 5;
+        List<Person> persons = personService.callPerson("jerry", num);
         List<Person> expectedPersons = new ArrayList<>();
         for (int i = 0; i < num; i++) {
             expectedPersons.add(new Person(Integer.toString(i), "jerry"));
@@ -76,8 +76,8 @@ public class ServiceTest {
     @Test
     public void helloPersonFutureTest1() throws Exception {
         RpcService helloPersonService = rpcClient.createAsyncService(PersonService.class, "");
-        int num = 5;
-        RpcFuture result = helloPersonService.call("GetTestPerson", "jerry", num);
+        Integer num = 5;
+        RpcFuture result = helloPersonService.call("callPerson", "jerry", num);
         List<Person> persons = (List<Person>) result.get();
         List<Person> expectedPersons = new ArrayList<>();
         for (int i = 0; i < num; i++) {
@@ -87,13 +87,6 @@ public class ServiceTest {
 
         for (int i = 0; i < num; ++i) {
             System.out.println(persons.get(i));
-        }
-    }
-
-    @After
-    public void setTear() {
-        if (rpcClient != null) {
-            rpcClient.stop();
         }
     }
 

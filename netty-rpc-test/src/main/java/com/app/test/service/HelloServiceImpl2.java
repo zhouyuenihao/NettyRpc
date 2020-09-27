@@ -20,7 +20,7 @@ public class HelloServiceImpl2 implements HelloService {
     }
 
     @Override
-    public String substring(String str, Integer indexOf) {
-        return str.substring(0,indexOf) + "v2";
+    public String hello(String name, Integer age) {
+        return name + " is " + age + " years old";
     }
 }

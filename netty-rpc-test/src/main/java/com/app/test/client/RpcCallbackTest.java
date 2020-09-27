@@ -21,7 +21,7 @@ public class RpcCallbackTest {
         try {
             RpcService client = rpcClient.createAsyncService(PersonService.class, "");
             int num = 5;
-            RpcFuture helloPersonFuture = client.call("GetTestPerson", "Jerry", num);
+            RpcFuture helloPersonFuture = client.call("callPerson", "Jerry", num);
             helloPersonFuture.addCallback(new AsyncRPCCallback() {
                 @Override
                 public void success(Object result) {

@@ -16,6 +16,6 @@
     <bean id="rpcClient" class="com.netty.rpc.client.RpcClient">
         <constructor-arg name="address" value="${registry.address}"/>
     </bean>
-    <bean id="foo" class="com.app.test.service.Baz"></bean>
+    <bean id="foo" class="com.app.test.service.FooService"></bean>
 
 </beans>

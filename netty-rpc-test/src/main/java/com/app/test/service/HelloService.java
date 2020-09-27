@@ -5,5 +5,5 @@ public interface HelloService {
 
     String hello(Person person);
 
-    String substring(String str, Integer indexOf);
+    String hello(String name, Integer age);
 }

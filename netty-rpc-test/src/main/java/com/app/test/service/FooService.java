@@ -2,7 +2,7 @@ package com.app.test.service;
 
 import com.netty.rpc.annotation.RpcAutowired;
 
-public class Baz implements Foo {
+public class FooService implements Foo {
     @RpcAutowired(version = "1.0")
     private HelloService helloService1;
 

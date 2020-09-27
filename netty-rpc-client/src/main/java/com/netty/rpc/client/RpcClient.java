@@ -5,9 +5,10 @@ import com.netty.rpc.client.proxy.RpcService;
 import com.netty.rpc.client.proxy.ObjectProxy;
 import com.netty.rpc.client.connect.ConnectionManager;
 import com.netty.rpc.client.discovery.ServiceDiscovery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -24,6 +25,8 @@ import java.util.concurrent.TimeUnit;
  * @author g-yu
  */
 public class RpcClient implements ApplicationContextAware, DisposableBean {
+    private static final Logger logger = LoggerFactory.getLogger(RpcClient.class);
+
     private ServiceDiscovery serviceDiscovery;
     private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16,
             600L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(1000));
@@ -33,16 +36,16 @@ public class RpcClient implements ApplicationContextAware, DisposableBean {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T,P> T createService(Class<T> interfaceClass, String version) {
+    public static <T, P> T createService(Class<T> interfaceClass, String version) {
         return (T) Proxy.newProxyInstance(
                 interfaceClass.getClassLoader(),
                 new Class<?>[]{interfaceClass},
-                new ObjectProxy<T,P>(interfaceClass, version)
+                new ObjectProxy<T, P>(interfaceClass, version)
         );
     }
 
-    public static <T,P> RpcService createAsyncService(Class<T> interfaceClass, String version) {
-        return new ObjectProxy<T,P>(interfaceClass, version);
+    public static <T, P> RpcService createAsyncService(Class<T> interfaceClass, String version) {
+        return new ObjectProxy<T, P>(interfaceClass, version);
     }
 
     public static void submit(Runnable task) {
@@ -76,7 +79,7 @@ public class RpcClient implements ApplicationContextAware, DisposableBean {
                     }
                 }
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                logger.error(e.toString());
             }
         }
     }
