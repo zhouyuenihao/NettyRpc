@@ -5,11 +5,13 @@ import com.netty.rpc.config.Constant;
 import com.netty.rpc.protocol.RpcProtocol;
 import com.netty.rpc.zookeeper.CuratorClient;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,16 +39,18 @@ public class ServiceDiscovery {
                 @Override
                 public void childEvent(CuratorFramework curatorFramework, PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
                     PathChildrenCacheEvent.Type type = pathChildrenCacheEvent.getType();
+                    ChildData childData = pathChildrenCacheEvent.getData();
                     switch (type) {
                         case CONNECTION_RECONNECTED:
                             logger.info("Reconnected to zk, try to get latest service list");
                             getServiceAndUpdateServer();
                             break;
                         case CHILD_ADDED:
+                            getServiceAndUpdateServer(childData, PathChildrenCacheEvent.Type.CHILD_ADDED);
                         case CHILD_UPDATED:
+                            getServiceAndUpdateServer(childData, PathChildrenCacheEvent.Type.CHILD_UPDATED);
                         case CHILD_REMOVED:
-                            logger.info("Service info changed, try to get latest service list");
-                            getServiceAndUpdateServer();
+                            getServiceAndUpdateServer(childData, PathChildrenCacheEvent.Type.CHILD_REMOVED);
                             break;
                     }
                 }
@@ -75,8 +79,21 @@ public class ServiceDiscovery {
         }
     }
 
+    private void getServiceAndUpdateServer(ChildData childData, PathChildrenCacheEvent.Type type) {
+        String path = childData.getPath();
+        String data = new String(childData.getData(), StandardCharsets.UTF_8);
+        logger.info("Child data updated, path:{},type:{},data:{},", path, type, data);
+        RpcProtocol rpcProtocol =  RpcProtocol.fromJson(data);
+        updateConnectedServer(rpcProtocol, type);
+    }
+
     private void UpdateConnectedServer(List<RpcProtocol> dataList) {
         ConnectionManager.getInstance().updateConnectedServer(dataList);
+    }
+
+
+    private void updateConnectedServer(RpcProtocol rpcProtocol, PathChildrenCacheEvent.Type type) {
+        ConnectionManager.getInstance().updateConnectedServer(rpcProtocol, type);
     }
 
     public void stop() {

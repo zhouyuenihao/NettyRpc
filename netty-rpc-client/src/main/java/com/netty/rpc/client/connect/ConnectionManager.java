@@ -12,6 +12,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,25 +75,33 @@ public class ConnectionManager {
             for (RpcProtocol rpcProtocol : rpcProtocolSet) {
                 if (!serviceSet.contains(rpcProtocol)) {
                     logger.info("Remove invalid service: " + rpcProtocol.toJson());
-                    RpcClientHandler handler = connectedServerNodes.get(rpcProtocol);
-                    if (handler != null) {
-                        handler.close();
-                    }
-                    connectedServerNodes.remove(rpcProtocol);
-                    rpcProtocolSet.remove(rpcProtocol);
+                    removeAndCloseHandler(rpcProtocol);
                 }
             }
         } else {
             // No available service
             logger.error("No available service!");
             for (RpcProtocol rpcProtocol : rpcProtocolSet) {
-                RpcClientHandler handler = connectedServerNodes.get(rpcProtocol);
-                if (handler != null) {
-                    handler.close();
-                }
-                connectedServerNodes.remove(rpcProtocol);
-                rpcProtocolSet.remove(rpcProtocol);
+                removeAndCloseHandler(rpcProtocol);
             }
+        }
+    }
+
+
+    public void updateConnectedServer(RpcProtocol rpcProtocol, PathChildrenCacheEvent.Type type) {
+        if (rpcProtocol == null) {
+            return;
+        }
+        if (type == PathChildrenCacheEvent.Type.CHILD_ADDED && !rpcProtocolSet.contains(rpcProtocol)) {
+            connectServerNode(rpcProtocol);
+        } else if (type == PathChildrenCacheEvent.Type.CHILD_UPDATED) {
+            //TODO We may don't need to reconnect remote server if the server'IP and server'port are not changed
+            removeAndCloseHandler(rpcProtocol);
+            connectServerNode(rpcProtocol);
+        } else if (type == PathChildrenCacheEvent.Type.CHILD_REMOVED) {
+            removeAndCloseHandler(rpcProtocol);
+        } else {
+            throw new IllegalArgumentException("Unknow type:" + type);
         }
     }
 
@@ -172,6 +181,15 @@ public class ConnectionManager {
         }
     }
 
+    private void removeAndCloseHandler(RpcProtocol rpcProtocol) {
+        RpcClientHandler handler = connectedServerNodes.get(rpcProtocol);
+        if (handler != null) {
+            handler.close();
+        }
+        connectedServerNodes.remove(rpcProtocol);
+        rpcProtocolSet.remove(rpcProtocol);
+    }
+
     public void removeHandler(RpcProtocol rpcProtocol) {
         rpcProtocolSet.remove(rpcProtocol);
         connectedServerNodes.remove(rpcProtocol);
@@ -181,12 +199,7 @@ public class ConnectionManager {
     public void stop() {
         isRunning = false;
         for (RpcProtocol rpcProtocol : rpcProtocolSet) {
-            RpcClientHandler handler = connectedServerNodes.get(rpcProtocol);
-            if (handler != null) {
-                handler.close();
-            }
-            connectedServerNodes.remove(rpcProtocol);
-            rpcProtocolSet.remove(rpcProtocol);
+            removeAndCloseHandler(rpcProtocol);
         }
         signalAvailableHandler();
         threadPoolExecutor.shutdown();
