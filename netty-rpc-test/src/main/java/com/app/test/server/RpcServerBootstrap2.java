@@ -21,7 +21,7 @@ public class RpcServerBootstrap2 {
         try {
             rpcServer.start();
         } catch (Exception ex) {
-            logger.error("Exception: {}", ex);
+            logger.error("Exception: {}", ex.toString());
         }
     }
 }
