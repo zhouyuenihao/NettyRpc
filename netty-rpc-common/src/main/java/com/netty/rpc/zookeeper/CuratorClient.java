@@ -41,8 +41,8 @@ public class CuratorClient {
         client.getConnectionStateListenable().addListener(connectionStateListener);
     }
 
-    public void createPathData(String path, byte[] data) throws Exception {
-        client.create().creatingParentsIfNeeded()
+    public String createPathData(String path, byte[] data) throws Exception {
+        return client.create().creatingParentsIfNeeded()
                 .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
                 .forPath(path, data);
     }
