@@ -9,10 +9,10 @@ import com.netty.rpc.client.handler.RpcFuture;
 import com.netty.rpc.client.proxy.RpcFunction;
 import com.netty.rpc.client.proxy.RpcFunction2;
 import com.netty.rpc.client.proxy.RpcService;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.omg.PortableInterceptor.INACTIVE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -31,6 +31,11 @@ public class ServiceTest2 {
 
     @Autowired
     private RpcClient rpcClient;
+
+    @After
+    public void stop() {
+        rpcClient.stop();
+    }
 
     @Test
     public void say() {

@@ -27,6 +27,11 @@ public class ServiceTest {
     @Autowired
     private RpcClient rpcClient;
 
+    @After
+    public void stop() {
+        rpcClient.stop();
+    }
+
     @Test
     public void helloTest1() {
         HelloService helloService = rpcClient.createService(HelloService.class, "1.0");
