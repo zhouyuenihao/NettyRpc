@@ -35,6 +35,7 @@ public class NettyServer extends Server {
         serviceMap.put(serviceKey, serviceBean);
     }
 
+    @Override
     public void start() {
         thread = new Thread(new Runnable() {
             ThreadPoolExecutor threadPoolExecutor = ThreadPoolUtil.makeServerThreadPool(
@@ -81,6 +82,7 @@ public class NettyServer extends Server {
         thread.start();
     }
 
+    @Override
     public void stop() {
         // destroy server thread
         if (thread != null && thread.isAlive()) {

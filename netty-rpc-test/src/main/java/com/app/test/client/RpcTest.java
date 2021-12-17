@@ -9,7 +9,7 @@ import com.app.test.service.HelloService;
 public class RpcTest {
 
     public static void main(String[] args) throws InterruptedException {
-        final RpcClient rpcClient = new RpcClient("10.217.59.164:2181");
+        final RpcClient rpcClient = new RpcClient("localhost:2181");
 
         int threadNum = 1;
         final int requestNum = 50;
